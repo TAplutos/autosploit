@@ -1,0 +1,2 @@
+# autosploit
+Automating metasploit
