@@ -25,7 +25,7 @@ if __name__ == "__main__":
     for k in client.sessions.list.keys():
         client.sessions.session(str(k)).stop()
     print("session list =", client.sessions.list)
-    
+
     ######### TEST YOUR VULNERABILITY HERE (change the number below to the index of your exploit in the vulnerabilities list)
     # Test your exploits here first cuz they won't work as reliably when all exploits are run at once below
     # vulnerability = vulnerabilities[1]
