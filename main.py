@@ -38,7 +38,7 @@ if __name__ == "__main__":
         exit()
 
     ######## WEAPONIZATION PHASE ########
-    vulnerabilitiesToUse = []
+    vulnerabilitiesToUse = set()
     for line in output:
         # Detect what keywords each line of the nmap output contains and compare those to the descriptions
         # for each known vulnerability and if all key words of a vulnerability are found, add it to the exploit list
@@ -53,8 +53,9 @@ if __name__ == "__main__":
                 if re.search(keyword, line, flag):
                     keyWordsFoundCount += 1
             if keyWordsFoundCount < vulnerability.minKeyTermsThatMustMatch:
-                break
-            vulnerabilitiesToUse.append(vulnerability)
+                continue
+            vulnerabilitiesToUse.add(vulnerability)
+            print(line)
             print("*********", vulnerability.description, "EXPLOIT FOUND *********")
 
     ######## DELIVERY, EXPLOITATION, INSTALLATION PHASE ########
