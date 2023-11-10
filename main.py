@@ -2,12 +2,6 @@
 # which has a vulnerability, and then it exploits that
 # NOT ALL VULNERABILITIES LIKE TO RUN AT THE SAME TIME.  SOME ONLY WORK WHEN RUN INDIVIDUALLY
 
-# ***************************************
-# ******* TO GET THIS SHIT TO RUN *******
-# 0) sudo apt install snap
-# 1) export PATH=$PATH:/snap/bin
-# 2) msfrpcd -P Trevor34
-
 from pymetasploit3.msfrpc import *
 import time
 import utils
@@ -18,6 +12,7 @@ import subprocess
 from knownVulnerabilities import vulnerabilities
 
 if __name__ == "__main__":
+    #######################################################################################
     ### COMMENT THIS OUT ONCE YOU RUN THE PROGRAM ONCE, must run every time you restart ###
     # proc1 = subprocess.Popen(["./setup.sh"])
     # time.sleep(180)
