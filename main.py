@@ -12,8 +12,9 @@ import subprocess
 from knownVulnerabilities import vulnerabilities
 
 if __name__ == "__main__":
-    #######################################################################################
-    ### COMMENT THIS OUT ONCE YOU RUN THE PROGRAM ONCE, must run every time you restart ###
+    #############################################################################
+    ### UNCOMMENT THIS TO RUN THE PROGRAM, THEN COMMENT THIS OUT ONCE YOU RUN THE 
+    # PROGRAM ONCE, this must run every time you restart ###
     # proc1 = subprocess.Popen(["./setup.sh"])
     # time.sleep(180)
     # proc1.kill()
