@@ -10,6 +10,7 @@ class Vulnerability():
         self.caseSensitiveKeyTermMatch = classDict["caseSensitiveKeyTermMatch"]
         self.module = classDict["moduleName"]
         self.description = classDict["description"]
+        self.exploitType = classDict["exploitType"]
         # THESE ARE MAYBE's FOR EACH EXPLOIT, SOME DONT USE PAYLOADS, SLEEP TIME...etc
         if "payload" in classDict: self.payload = classDict["payload"]
         else: self.payload = None
@@ -34,6 +35,7 @@ _ircdDict = {
     "caseSensitiveKeyTermMatch": True,
     "moduleName": "unix/irc/unreal_ircd_3281_backdoor",
     "description": "unreal ircd backdoor RCE",
+    "exploitType": "exploit",
     "payload": "cmd/unix/bind_ruby"
     } 
 _ircd = Vulnerability(_ircdDict)
@@ -44,6 +46,7 @@ _distccDict = {
     "caseSensitiveKeyTermMatch": False,
     "moduleName": "unix/misc/distcc_exec",
     "description": "distcc RCE",
+    "exploitType": "exploit",
     "payload": "cmd/unix/bind_ruby",
     "sleep": 20
     } 
@@ -55,9 +58,23 @@ _vsftpdDict = {
     "caseSensitiveKeyTermMatch": False,
     "moduleName": "unix/ftp/vsftpd_234_backdoor",
     "description": "vsftpd backdoor RCE",
+    "exploitType": "exploit",
     "payload": "cmd/unix/interact",
     "sleep": 15
     } 
 _vsftpd = Vulnerability(_vsftpdDict)
 
-vulnerabilities = [_ircd, _distcc, _vsftpd]
+# doesnt work yet idk why
+_smtpScannerDict = {
+    "keywords": "25,smtp",
+    "minKeyTermsThatMustMatch": 2,
+    "caseSensitiveKeyTermMatch": False,
+    "moduleName": "scanner/smtp/smtp_enum",
+    "description": "SMTP scanner for user enumeration",
+    "exploitType": "auxiliary",
+    "payload": None,
+    "sleep": 1500
+    } 
+_smtpScanner= Vulnerability(_smtpScannerDict)
+
+vulnerabilities = [_ircd, _distcc, _vsftpd, _smtpScanner]

