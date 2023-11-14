@@ -56,7 +56,7 @@ def run_gui():
     button.pack()
 
     # Create widget for setup script
-    setup_button = tk.Button(root, text="Run Server Setup", command=run_setup_script)
+    setup_button = tk.Button(root, text="Run Server Setup", command=run_server_script)
     setup_button.pack()
 
     # Run the application
