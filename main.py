@@ -10,6 +10,40 @@ import nmap_dest
 import re
 import subprocess
 from knownVulnerabilities import vulnerabilities
+import tkinter as tk
+from tkinter import simpledialog
+
+def retrieve_input():
+    # Get the input from the entry widget
+    input_value = entry.get()
+    try:
+        # Convert to integer and validate range
+        aggressiveness = int(input_value)
+        if 0 <= aggressiveness <= 3:
+            # Call your Nmap scan function here with aggressiveness
+            print(f"Running Nmap scan with aggressiveness {aggressiveness}")
+        else:
+            print("Please enter a valid number between 0 and 3.")
+    except ValueError:
+        print("Please enter a valid integer.")
+
+# Create main window
+root = tk.Tk()
+root.title("Nmap Scan Configuration")
+
+# Create widgets
+label = tk.Label(root, text="Enter the aggressiveness of the nmap scan (0-3):")
+label.pack()
+
+entry = tk.Entry(root)
+entry.pack()
+
+button = tk.Button(root, text="Submit", command=retrieve_input)
+button.pack()
+
+# Run the application
+root.mainloop()
+
 
 if __name__ == "__main__":
     #############################################################################
