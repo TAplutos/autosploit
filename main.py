@@ -9,9 +9,12 @@ import sys
 import nmap_dest
 import re
 import subprocess
+import os
 from knownVulnerabilities import vulnerabilities
 import tkinter as tk
+import tkinter.messagebox
 from tkinter import simpledialog
+import threading
 
 def retrieve_input():
     # Get the input from the entry widget
@@ -27,6 +30,13 @@ def retrieve_input():
     except ValueError:
         print("Please enter a valid integer.")
 
+def run_setup_script():
+    def script():
+        subprocess.run(["./server.sh"], shell=True)
+        tk.messagebox.showinfo("Setup Script", "Metasploit RPC server setup completed.")
+    
+    threading.Thread(target=script).start()
+
 # Create main window
 root = tk.Tk()
 root.title("Nmap Scan Configuration")
@@ -41,6 +51,10 @@ entry.pack()
 button = tk.Button(root, text="Submit", command=retrieve_input)
 button.pack()
 
+# Create widget for setup script
+setup_button = tk.Button(root, text="Run Server Setup", command=run_setup_script)
+setup_button.pack()
+
 # Run the application
 root.mainloop()
 
@@ -48,11 +62,11 @@ root.mainloop()
 if __name__ == "__main__":
     #############################################################################
     ### UNCOMMENT THIS TO RUN THE PROGRAM, THEN COMMENT THIS OUT ONCE YOU RUN THE 
-    # PROGRAM ONCE, this must run every time you restart ###
+    # PROGRAM ONCE, this must run every time you restart computer ###
     # proc1 = subprocess.Popen(["./setup.sh"])
     # time.sleep(180)
     # proc1.kill()
-    ### COMMENT THIS OUT ONCE YOU RUN THE PROGRAM ONCE, must run every time you restart ###
+    ### COMMENT THIS OUT ONCE YOU RUN THE PROGRAM ONCE, must run every time you restart computer###
 
     # basically starts metasploit and kill all previous sessions 
     client = MsfRpcClient('PASSWORD', port=55553, ssl=True)
