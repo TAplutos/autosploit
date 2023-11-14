@@ -39,6 +39,13 @@ def run_server_script():
     
     threading.Thread(target=script).start()
 
+# Event to control the flow
+continue_event = threading.Event()
+
+def on_button_click():
+    # Set the event to resume the script
+    continue_event.set()
+
 # Create the GUI
 def run_gui():
     global root, entry
@@ -59,6 +66,10 @@ def run_gui():
     setup_button = tk.Button(root, text="Run Server Setup", command=run_server_script)
     setup_button.pack()
 
+    # Button to resume script execution
+    button = tk.Button(root, text="Resume Script", command=on_button_click)
+    button.pack()
+
     # Run the application
     root.mainloop()
 
@@ -74,6 +85,10 @@ atexit.register(on_exit)
 # Start the GUI thread
 gui_thread = threading.Thread(target=run_gui)
 gui_thread.start()
+
+print("Script paused. Waiting for button click...")
+continue_event.wait()
+print("Button clicked. Script resumed.")
 
 if __name__ == "__main__":
     #############################################################################
