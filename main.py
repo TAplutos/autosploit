@@ -41,14 +41,28 @@ def run_server_script():
 
 # Create the GUI
 def run_gui():
-    global root
+    global root, entry
     root = tk.Tk()
     root.title("Nmap Scan Configuration")
+
+    # Create widgets
+    label = tk.Label(root, text="Enter the aggressiveness of the nmap scan (0-3):")
+    label.pack()
+
+    entry = tk.Entry(root)
+    entry.pack()
+
+    button = tk.Button(root, text="Submit", command=retrieve_input)
+    button.pack()
+
+    # Create widget for setup script
+    setup_button = tk.Button(root, text="Run Server Setup", command=run_setup_script)
+    setup_button.pack()
+
+    # Run the application
     root.mainloop()
 
-gui_thread = threading.Thread(target=run_gui)
-gui_thread.start()
-
+# Close the GUI on exit
 def on_exit():
     try:
         root.destroy()
@@ -57,23 +71,9 @@ def on_exit():
 
 atexit.register(on_exit)
 
-# Create widgets
-label = tk.Label(root, text="Enter the aggressiveness of the nmap scan (0-3):")
-label.pack()
-
-entry = tk.Entry(root)
-entry.pack()
-
-button = tk.Button(root, text="Submit", command=retrieve_input)
-button.pack()
-
-# Create widget for setup script
-setup_button = tk.Button(root, text="Run Server Setup", command=run_setup_script)
-setup_button.pack()
-
-# Run the application
-root.mainloop()
-
+# Start the GUI thread
+gui_thread = threading.Thread(target=run_gui)
+gui_thread.start()
 
 if __name__ == "__main__":
     #############################################################################
