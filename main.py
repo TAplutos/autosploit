@@ -15,6 +15,7 @@ import tkinter as tk
 import tkinter.messagebox
 from tkinter import simpledialog
 import threading
+import atexit
 
 def retrieve_input():
     # Get the input from the entry widget
@@ -30,16 +31,31 @@ def retrieve_input():
     except ValueError:
         print("Please enter a valid integer.")
 
-def run_setup_script():
+# Run the setup script
+def run_server_script():
     def script():
         subprocess.run(["./server.sh"], shell=True)
-        tk.messagebox.showinfo("Setup Script", "Metasploit RPC server setup completed.")
+        tk.messagebox.showinfo("Setup Server Script", "Metasploit RPC server setup completed.")
     
     threading.Thread(target=script).start()
 
-# Create main window
-root = tk.Tk()
-root.title("Nmap Scan Configuration")
+# Create the GUI
+def run_gui():
+    global root
+    root = tk.Tk()
+    root.title("Nmap Scan Configuration")
+    root.mainloop()
+
+gui_thread = threading.Thread(target=run_gui)
+gui_thread.start()
+
+def on_exit():
+    try:
+        root.destroy()
+    except:
+        pass  # Window already destroyed
+
+atexit.register(on_exit)
 
 # Create widgets
 label = tk.Label(root, text="Enter the aggressiveness of the nmap scan (0-3):")
