@@ -32,18 +32,21 @@ def retrieve_input():
         print("Please enter a valid integer.")
 
 server_setup_done = False
-# Define the setup_button variable
-setup_button = None
-
 # Run the setup script
 def run_server_script():
-    def script():
-        subprocess.run(["./server.sh"], shell=True)
-        tk.messagebox.showinfo("Setup Server Script", "Metasploit RPC server setup completed.")
-    
-    threading.Thread(target=script).start()
-    server_setup_done = True
-    setup_button.config(state="disabled")  # Disable the button
+    global setup_button  # Declare setup_button as global
+    global server_setup_done
+    if not server_setup_done:
+        def script():
+            subprocess.run(["./server.sh"], shell=True)
+            tk.messagebox.showinfo("Setup Server Script", "Metasploit RPC server setup completed.")
+        
+        threading.Thread(target=script).start()
+        server_setup_done = True
+
+        # Check if setup_button is not None before accessing it
+        if setup_button is not None:
+            setup_button.config(state="disabled")
 
 # Event to control the flow
 continue_event = threading.Event()
@@ -54,6 +57,7 @@ def on_button_click():
 
 # Create the GUI
 def run_gui():
+    global setup_button
     global root, entry
     root = tk.Tk()
     root.title("Nmap Scan Configuration")
