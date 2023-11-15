@@ -31,6 +31,10 @@ def retrieve_input():
     except ValueError:
         print("Please enter a valid integer.")
 
+server_setup_done = False
+# Define the setup_button variable
+setup_button = None
+
 # Run the setup script
 def run_server_script():
     def script():
@@ -38,6 +42,8 @@ def run_server_script():
         tk.messagebox.showinfo("Setup Server Script", "Metasploit RPC server setup completed.")
     
     threading.Thread(target=script).start()
+    server_setup_done = True
+    setup_button.config(state="disabled")  # Disable the button
 
 # Event to control the flow
 continue_event = threading.Event()
