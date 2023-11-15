@@ -14,8 +14,19 @@ from knownVulnerabilities import vulnerabilities
 import tkinter as tk
 import tkinter.messagebox
 from tkinter import simpledialog
-import threading
-import atexit
+
+server_setup_done = False
+
+# Script that sets up msfconsole RPC server
+def run_server_script():
+    global setup_button  # Declare setup_button as global
+    global server_setup_done
+    if not server_setup_done:
+        subprocess.Popen(["./server.sh"], shell=True)
+        server_setup_done = True
+        setup_button.config(state="disabled")
+        tk.messagebox.showinfo("Setup Server Script", "Metasploit RPC server setup completed.")
+
 
 def retrieve_input():
     # Get the input from the entry widget
@@ -31,74 +42,32 @@ def retrieve_input():
     except ValueError:
         print("Please enter a valid integer.")
 
-server_setup_done = False
-# Run the setup script
-def run_server_script():
-    global setup_button  # Declare setup_button as global
-    global server_setup_done
-    if not server_setup_done:
-        def script():
-            subprocess.run(["./server.sh"], shell=True)
-            tk.messagebox.showinfo("Setup Server Script", "Metasploit RPC server setup completed.")
-        
-        threading.Thread(target=script).start()
-        server_setup_done = True
-
-        # Check if setup_button is not None before accessing it
-        if setup_button is not None:
-            setup_button.config(state="disabled")
-
-# Event to control the flow
-continue_event = threading.Event()
-
-def on_button_click():
-    # Set the event to resume the script
-    continue_event.set()
 
 # Create the GUI
-def run_gui():
-    global setup_button
-    global root, entry
-    root = tk.Tk()
-    root.title("Nmap Scan Configuration")
+root = tk.Tk()
+root.title("Nmap Scan Configuration")
 
-    # Create widgets
-    label = tk.Label(root, text="Enter the aggressiveness of the nmap scan (0-3):")
-    label.pack()
+# Create widgets here
+# Button to run server script
+server_button = tk.Button(root, text="Run Server Setup", command=run_server_script)
+server_button.pack()
 
-    entry = tk.Entry(root)
-    entry.pack()
+label = tk.Label(root, text="Enter the aggressiveness of the nmap scan (0-3):")
+label.pack()
 
-    button = tk.Button(root, text="Submit", command=retrieve_input)
-    button.pack()
+entry = tk.Entry(root)
+entry.pack()
 
-    # Create widget for setup script
-    setup_button = tk.Button(root, text="Run Server Setup", command=run_server_script)
-    setup_button.pack()
+button = tk.Button(root, text="Submit", command=retrieve_input)
+button.pack()
 
-    # Button to resume script execution
-    button = tk.Button(root, text="Resume Script", command=on_button_click)
-    button.pack()
+# Button to resume script execution
 
-    # Run the application
-    root.mainloop()
 
-# Close the GUI on exit
-def on_exit():
-    try:
-        root.destroy()
-    except:
-        pass  # Window already destroyed
+# Run the application
+root.mainloop()
 
-atexit.register(on_exit)
-
-# Start the GUI thread
-gui_thread = threading.Thread(target=run_gui)
-gui_thread.start()
-
-print("Script paused. Waiting for button click...")
-continue_event.wait()
-print("Button clicked. Script resumed.")
+# Create an event to pause the script
 
 if __name__ == "__main__":
     #############################################################################
