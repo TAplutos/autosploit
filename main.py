@@ -19,12 +19,11 @@ server_setup_done = False
 
 # Script that sets up msfconsole RPC server
 def run_server_script():
-    global setup_button  # Declare setup_button as global
-    global server_setup_done
+    global server_setup_done, server_button
     if not server_setup_done:
         subprocess.Popen(["./server.sh"], shell=True)
         server_setup_done = True
-        setup_button.config(state="disabled")
+        server_button.config(state="disabled")
         tk.messagebox.showinfo("Setup Server Script", "Metasploit RPC server setup completed.")
 
 
@@ -45,7 +44,7 @@ def retrieve_input():
 
 # Create the GUI
 root = tk.Tk()
-root.title("Nmap Scan Configuration")
+root.title("Bootcon Pentesting Tool GUI v0.1")
 
 # Create widgets here
 # Button to run server script
