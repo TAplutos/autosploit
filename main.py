@@ -23,12 +23,23 @@ def run_setup_script():
     global initial_setup_done, setup_button
     if not initial_setup_done:
         subprocess.Popen(["./setup.sh"], shell=True)
-        tk.messagebox.showinfo("Initial Setup Script", "Initial setup started, please wait 3 minutes. We will notify you when it is done.")
         initial_setup_done = True
         setup_button.config(state="disabled")
-        time.sleep(180) # waits for the server.sh sleep to finish
-        tk.messagebox.showinfo("Initial Setup Script", "Initial setup completed, startup your server and have fun.")
+        
+        # Create a top-level pop-up window
+        popup = tk.Toplevel(root)
+        popup.title("Setup in Progress")
+        message = tk.Label(popup, text="Initial setup started, please wait 3 minutes. \nNote you will need to input your password in terminal to properly run the sudo commands. \nThis window will close automatically once it's done!")
+        message.pack()
 
+        # Function to close the popup
+        def close_popup():
+            popup.destroy()
+            tk.messagebox.showinfo("Initial Setup Script", "Initial setup completed, startup your server and have fun.")
+
+        # Schedule the popup to close after 180 seconds (3 minutes)
+        popup.after(180000, close_popup)
+        
 
 # Script that sets up msfconsole RPC server
 def run_server_script():
