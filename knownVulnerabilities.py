@@ -60,7 +60,7 @@ _vsftpdDict = {
     "description": "vsftpd backdoor RCE",
     "exploitType": "exploit",
     "payload": "cmd/unix/interact",
-    "sleep": 15
+    "sleep": 20
     } 
 _vsftpd = Vulnerability(_vsftpdDict)
 

