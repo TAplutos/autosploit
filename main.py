@@ -15,7 +15,20 @@ import tkinter as tk
 import tkinter.messagebox
 from tkinter import simpledialog
 
+initial_setup_done = False
 server_setup_done = False
+
+# Script that sets up msfconsole RPC server
+def run_setup_script():
+    global initial_setup_done, setup_button
+    if not initial_setup_done:
+        subprocess.Popen(["./setup.sh"], shell=True)
+        tk.messagebox.showinfo("Initial Setup Script", "Initial setup started, please wait 3 minutes. We will notify you when it is done.")
+        initial_setup_done = True
+        setup_button.config(state="disabled")
+        time.sleep(180) # waits for the server.sh sleep to finish
+        tk.messagebox.showinfo("Initial Setup Script", "Initial setup completed, startup your server and have fun.")
+
 
 # Script that sets up msfconsole RPC server
 def run_server_script():
@@ -24,6 +37,7 @@ def run_server_script():
         subprocess.Popen(["./server.sh"], shell=True)
         server_setup_done = True
         server_button.config(state="disabled")
+        time.sleep(10) # waits for the server.sh sleep to finish
         tk.messagebox.showinfo("Setup Server Script", "Metasploit RPC server setup completed.")
 
 
@@ -33,11 +47,11 @@ def retrieve_input():
     try:
         # Convert to integer and validate range
         aggressiveness = int(input_value)
-        if 0 <= aggressiveness <= 3:
+        if 0 <= aggressiveness <= 5:
             # Call your Nmap scan function here with aggressiveness
             print(f"Running Nmap scan with aggressiveness {aggressiveness}")
         else:
-            print("Please enter a valid number between 0 and 3.")
+            print("Please enter a valid number between 0 and 5. Note that higher is faster but more detectable.")
     except ValueError:
         print("Please enter a valid integer.")
 
@@ -46,12 +60,18 @@ def retrieve_input():
 root = tk.Tk()
 root.title("Bootcon Pentesting Tool GUI v0.1")
 
-# Create widgets here
+##### Create widgets here #####
+
+# Button to run initial setup script
+setup_button = tk.Button(root, text="Run Initial Setup", command=run_setup_script)
+setup_button.pack()
+
 # Button to run server script
 server_button = tk.Button(root, text="Run Server Setup", command=run_server_script)
 server_button.pack()
 
-label = tk.Label(root, text="Enter the aggressiveness of the nmap scan (0-3):")
+# Input for aggressiveness of Nmap scan
+label = tk.Label(root, text="Enter the aggressiveness of the nmap scan (0-5):")
 label.pack()
 
 entry = tk.Entry(root)
@@ -60,13 +80,10 @@ entry.pack()
 button = tk.Button(root, text="Submit", command=retrieve_input)
 button.pack()
 
-# Button to resume script execution
-
-
 # Run the application
 root.mainloop()
 
-# Create an event to pause the script
+# We need to set the bellow to be called via the GUI
 
 if __name__ == "__main__":
     #############################################################################
