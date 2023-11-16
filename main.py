@@ -29,7 +29,7 @@ def run_setup_script():
         # Create a top-level pop-up window
         popup = tk.Toplevel(root)
         popup.title("Setup in Progress")
-        message = tk.Label(popup, text="Initial setup started, please wait 3 minutes. \nNote you will need to input your password in terminal to properly run the sudo commands. \nThis window will close automatically once it's done!")
+        message = tk.Label(popup, text="Initial setup started, please wait 3 minutes. \nThis window will close automatically once it's done! \n\nNote: you will need to input your password in terminal to properly run the sudo commands.\n\n Note: If it says you have the requirements already then feel free to close this window and move on.")
         message.pack()
 
         # Function to close the popup
