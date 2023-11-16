@@ -223,7 +223,7 @@ class MsfRpcClient(object):
 
         if is_raw:
             return r.content
-
+        
         return convert(decode(r.content), self.encoding)  # convert all keys/vals to utf8
 
     @retry(tries=3, delay=1, backoff=2)
@@ -293,7 +293,7 @@ class MsfRpcClient(object):
     @property
     def authenticated(self):
         """
-        Whether or not this client is authenticated.
+        Whether or not this client is authenticated IN MSFCONSOLE
         """
         return self.token is not None
 
@@ -1268,6 +1268,7 @@ class MsfModule(object):
         self.modulename = mname
         self.rpc = rpc
         self._info = rpc.call(MsfRpcMethod.ModuleInfo, [mtype, mname])
+        print("INFO X01", self._info)
         property_attributes = ["advanced", "evasion", "options", "required", "runoptions"]
         for k in self._info:
             if k not in property_attributes:
@@ -1454,10 +1455,11 @@ class MsfModule(object):
                     runopts['PAYLOAD'] = payload
                 else:
                     raise TypeError("Expected type str or PayloadModule not '%s'" % type(kwargs['payload']).__name__)
+        ret = self.rpc.call(MsfRpcMethod.ModuleExecute, [self.moduletype, self.modulename, runopts])
+        print("RETURN VALUE X02", ret)
+        return ret
 
-        return self.rpc.call(MsfRpcMethod.ModuleExecute, [self.moduletype, self.modulename, runopts])
-
-    def check(self, **kwargs):
+    def check_redo(self, **kwargs):
         """
         Executes the check module with its run options as parameters.
 

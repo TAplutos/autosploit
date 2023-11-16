@@ -27,6 +27,15 @@ def grepPositions(input_str, word):
 
     return positions
 
+def extractResult(output): 
+    arrayOutput = output.splitlines()
+    # for index,line in enumerate(arrayOutput):
+    #     if("DisablePayloadHandler" in line):
+    #         del arrayOutput[:index+1]
+    
+    # del arrayOutput[-2:]
+    return arrayOutput
+
 # returns an array of all characters between a and b positions after every occurence of word in input
 # e.g. input = '<port protocol="tcp" portid="22"><state state="open" reason="syn-ack" reason_ttl="0"/><service name="ssh" method="table " conf="3"/></port> <port protocol="tcp" portid="99"><state state="open" reason="syn-ack" reason_ttl="0"/><service name="nping-echo" method="table" conf="3"/></'
 # word = portid

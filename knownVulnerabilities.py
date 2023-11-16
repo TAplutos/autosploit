@@ -18,6 +18,8 @@ class Vulnerability():
         # not run at the same time, one should finish before the next is run hence this timer
         if "sleep" in classDict: self.sleep = classDict["sleep"]
         else: self.sleep = 10
+        if "canCheck" in classDict: self.sleep = classDict["canCheck"]
+        else: self.canCheck = True
         self.session = None # TODO: create a method to set and get this
 
 
