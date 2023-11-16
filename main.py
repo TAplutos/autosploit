@@ -14,9 +14,11 @@ from knownVulnerabilities import vulnerabilities
 import tkinter as tk
 import tkinter.messagebox
 from tkinter import simpledialog
+from tkinter import ttk
 
 initial_setup_done = False
 server_setup_done = False
+RHOSTS = None #Holds our target IP addresses
 
 # Script that sets up msfconsole RPC server
 def run_setup_script():
@@ -28,7 +30,7 @@ def run_setup_script():
         
         # Create a top-level pop-up window
         popup = tk.Toplevel(root)
-        popup.title("Setup in Progress")
+        popup.title("Initial Setup in Progress")
         message = tk.Label(popup, text="Initial setup started, please wait 3 minutes. \nThis window will close automatically once it's done! \n\nNote: you will need to input your password in terminal to properly run the sudo commands.\n\n Note: If it says you have the requirements already then feel free to close this window and move on.")
         message.pack()
 
@@ -48,8 +50,20 @@ def run_server_script():
         subprocess.Popen(["./server.sh"], shell=True)
         server_setup_done = True
         server_button.config(state="disabled")
-        time.sleep(10) # waits for the server.sh sleep to finish
-        tk.messagebox.showinfo("Setup Server Script", "Metasploit RPC server setup completed.")
+       
+       # Create a top-level pop-up window
+        popup = tk.Toplevel(root)
+        popup.title("Server Setup in Progress")
+        message = tk.Label(popup, text="Server setup started, please wait 10 seconds. \nThis window will close automatically once it's done! \n\nNote: You only need to run this if you restarted your computer since the last time you ran this setup.")
+        message.pack()
+
+        # Function to close the popup
+        def close_popup():
+            popup.destroy()
+            tk.messagebox.showinfo("Server Setup Script", "Server setup completed, Go have fun.")
+
+        # Schedule the popup to close after 10 seconds
+        popup.after(10000, close_popup)
 
 
 def retrieve_input():
@@ -65,6 +79,18 @@ def retrieve_input():
             print("Please enter a valid number between 0 and 5. Note that higher is faster but more detectable.")
     except ValueError:
         print("Please enter a valid integer.")
+
+def update_rhosts_combobox(new_items):
+    rhosts_combobox['values'] = new_items
+    if new_items:
+        rhosts_combobox.current(0)  # Optionally, set the first item as the default selection
+
+def on_rhosts_select(event):
+    global RHOSTS
+    selected_value = rhosts_combobox.get()
+    if selected_value and selected_value != "Select RHOST":
+        RHOSTS = selected_value
+        print(f"RHOSTS set to: {RHOSTS}")  # For debugging
 
 
 # Create the GUI
@@ -90,6 +116,14 @@ entry.pack()
 
 button = tk.Button(root, text="Submit", command=retrieve_input)
 button.pack()
+
+# RHost dropdown menu
+rhosts_combobox = ttk.Combobox(root)
+rhosts_combobox['values'] = ["Select RHOST", "Example 1", "Example 2"]  # Placeholder values
+rhosts_combobox.current(0)  # Set the combobox to show the first item
+rhosts_combobox.pack()
+
+rhosts_combobox.bind("<<ComboboxSelected>>", on_rhosts_select)
 
 # Run the application
 root.mainloop()
