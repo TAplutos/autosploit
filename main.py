@@ -20,7 +20,7 @@ initial_setup_done = False
 server_setup_done = False
 RHOSTS = None #Holds our target IP addresses
 
-# Script that sets up msfconsole RPC server
+# Does initial setup
 def run_setup_script():
     global initial_setup_done, setup_button
     if not initial_setup_done:
@@ -43,7 +43,7 @@ def run_setup_script():
         popup.after(180000, close_popup)
         
 
-# Script that sets up msfconsole RPC server
+# Sets up msfconsole RPC server
 def run_server_script():
     global server_setup_done, server_button
     if not server_setup_done:
@@ -65,7 +65,7 @@ def run_server_script():
         # Schedule the popup to close after 10 seconds
         popup.after(10000, close_popup)
 
-
+# Gets nmap aggressiveness from GUI
 def retrieve_input():
     # Get the input from the entry widget
     input_value = entry.get()
@@ -80,11 +80,25 @@ def retrieve_input():
     except ValueError:
         print("Please enter a valid integer.")
 
+# Initiates an Nmap scan with the aggressiveness specified in the GUI
+def initiate_nmap_scan():
+    # Assuming aggressiveness is obtained from the GUI
+    aggressiveness = int(entry.get())
+    if 0 <= aggressiveness <= 5:
+        # Call your Nmap scan function here with aggressiveness
+        nmap_dest.run_scan(aggressiveness)  # Replace with actual function call
+        print(f"Running Nmap scan with aggressiveness {aggressiveness}")
+    else:
+        tk.messagebox.showwarning("Warning", "Please enter a valid number between 0 and 5.")
+
+
+# Updates the RHOSTS combobox with new items
 def update_rhosts_combobox(new_items):
     rhosts_combobox['values'] = new_items
     if new_items:
         rhosts_combobox.current(0)  # Optionally, set the first item as the default selection
 
+# Updates the RHOSTS variable when a new item is selected
 def on_rhosts_select(event):
     global RHOSTS
     selected_value = rhosts_combobox.get()
@@ -92,7 +106,16 @@ def on_rhosts_select(event):
         RHOSTS = selected_value
         print(f"RHOSTS set to: {RHOSTS}")  # For debugging
 
+# Starts metasploit and kills all previous sessions
+def start_metasploit():
+    client = MsfRpcClient('PASSWORD', port=55553, ssl=True)
+    for k in client.sessions.list.keys():
+        client.sessions.session(str(k)).stop()
+    print("session list =", client.sessions.list)
+    tk.messagebox.showinfo("Metasploit", "Metasploit started and previous sessions killed.")
 
+
+###################################### GUI ######################################
 # Create the GUI
 root = tk.Tk()
 root.title("Bootcon Pentesting Tool GUI v0.1")
@@ -117,6 +140,14 @@ entry.pack()
 button = tk.Button(root, text="Submit", command=retrieve_input)
 button.pack()
 
+# Button to start metasploit
+server_button = tk.Button(root, text="Start Metasploit", command=start_metasploit)
+server_button.pack()
+
+# Start Nmap scan button
+nmap_button = tk.Button(root, text="Submit Nmap Scan", command=initiate_nmap_scan)
+nmap_button.pack()
+
 # RHost dropdown menu
 rhosts_combobox = ttk.Combobox(root)
 rhosts_combobox['values'] = ["Select RHOST", "Example 1", "Example 2"]  # Placeholder values
@@ -125,7 +156,7 @@ rhosts_combobox.pack()
 
 rhosts_combobox.bind("<<ComboboxSelected>>", on_rhosts_select)
 
-# Run the application
+# Run the application (Remember everything that is used needs to be defined above this)
 root.mainloop()
 
 # We need to set the bellow to be called via the GUI
