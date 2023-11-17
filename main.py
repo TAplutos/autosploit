@@ -136,6 +136,10 @@ if __name__ == "__main__":
 
     # utils.runThisCommand("sudo snap install metasploit-framework")
     print(utils.runThisCommand("whoami"))
+    print(utils.runThisCommand("sudo systemctl enable snapd.service"))
+    print(utils.runThisCommand("sudo systemctl start snapd.service"))
+    time.sleep(5)
+
     print("SNAP INSTALLING METASPLOIT-FRAMEWORK") 
     p = subprocess.Popen(["sudo snap install metasploit-framework"], stdout=subprocess.PIPE, shell=True)
     (output, err) = p.communicate() 

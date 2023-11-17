@@ -5,13 +5,14 @@ FROM ubuntu:latest
 RUN apt-get update && \
     apt-get --assume-yes install \
     apt-utils \
+    systemd \
     snap \
     snapd \
     python3 \
     python3-pip \
     net-tools \
-    nmap \
     sudo \
+    nmap \
     && rm -rf /var/lib/apt/lists/*
 
 ENV PATH=$PATH:/snap/bin
@@ -23,7 +24,18 @@ WORKDIR /app
 COPY . .
 
 # Install pymetasploit3 using pip
+RUN sudo pip3 install pymetasploit3
 RUN pip3 install pymetasploit3
+
+RUN sudo pip3 install msgpack
+RUN pip3 install msgpack
+
+RUN sudo pip3 install retry
+RUN pip3 install retry
+
+RUN sudo pip3 install requests
+RUN pip3 install requests
+
 
 # Run the setup.sh script
 # RUN chmod +x setup.sh
