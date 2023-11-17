@@ -117,15 +117,14 @@ _mysqlBruteForceDict = {
     "outputPatternMatch": "MYSQL - Success: .*",
     "addUserNames": True,
     "maxRuntime": 10000,
-    "options": [("ANONYMOUS_LOGIN", True),
-                ("BLANK_PASSWORDS", True),
-                ("DB_ALL_PASS", True),
-                ("DB_ALL_USERS", True),
-                ("USER_AS_PASS", True),
-                ("VERBOSE", True),
-                ("USER_FILE", "USERNAMES.txt"),
-                ("PASS_FILE", "PASSWORDS.txt"),
-                ("USERPASS_FILE", "")]
+    # "options": [("ANONYMOUS_LOGIN", True),
+    #             ("BLANK_PASSWORDS", True)]
+                # ,
+                # ("DB_ALL_USERS", True),
+                # ("USER_AS_PASS", True),
+                # ("VERBOSE", True),
+                # ("USER_FILE", "USERNAMES.txt"),
+                # ("PASS_FILE", "PASSWORDS.txt")]
     }
 _mysqlBruteForce = Vulnerability(_mysqlBruteForceDict)
 

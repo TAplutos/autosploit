@@ -60,11 +60,11 @@ def runExploits(vulnerabilitiesToUse = set([vulnerabilities[EXPLOIT_NUM]])):
         if exploit.missing_required:
             print("missing options:", exploit.missing_required)
         
-        if vulnerability.options.items():
+        if vulnerability.options:
             print("Settings:")
-        for option, value in vulnerability.options.items():
-            print(option + ":", value)
-            exploit[option] = value
+            for option, value in vulnerability.options.items():
+                print(option + ":", value)
+                exploit[option] = value
 
         if CHECK_MODE & vulnerability.canCheck: # CHECK THE EXPLOIT's FEASIBILITY
             print("#" * 34, "ONLY CHECKING EXPLOITABILITY", "#" * 34)
@@ -95,6 +95,7 @@ def runExploits(vulnerabilitiesToUse = set([vulnerabilities[EXPLOIT_NUM]])):
                 # output = ""
             else:
                 output = console.run_module_with_output(exploit)
+            print("XXXXXXXXX\n\n\n", output)
             # print("\nOUTPUT:\n" + output) # uncomment this for debugging output
             resultExtracted = utils.getSuccessMessage(output)
             print("OUTPUT extracted:")
