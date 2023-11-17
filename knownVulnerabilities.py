@@ -114,7 +114,7 @@ _mysqlBruteForceDict = {
     "description": "SQL login spam",
     "exploitType": "auxiliary",
     "payload": None,
-    "outputPatternMatch": "MYSQL - Success: .*",
+    "outputPatternMatch": "MYSQL - Success: .*", # TODO: check this
     "addUserNames": True,
     "maxRuntime": 10000,
     # "options": [("ANONYMOUS_LOGIN", True),
@@ -137,7 +137,7 @@ _tomcatDict = {
     "description": "Port 8180 Apache Tomcat Exploit",
     "exploitType": "exploit",
     "payload": None,
-    "outputPatternMatch": "Meterpreter session [0-9]* opened.*",
+    "outputPatternMatch": "Meterpreter session [0-9]* opened.*",  # TODO: check this
     "addUserNames": True,
     "maxRuntime": 10000,
     "options": [("HttpPassword", "tomcat"),
@@ -155,7 +155,7 @@ _sambaDict = {
     "description": "Port 8180 Apache Tomcat Exploit",
     "exploitType": "exploit",
     "payload": None,
-    "outputPatternMatch": "shell session [0-9]* opened.*",
+    "outputPatternMatch": "shell session [0-9]* opened.*",  # TODO: check this
     "addUserNames": True,
     "maxRuntime": 20
     }
@@ -192,4 +192,4 @@ _postgresDict = {
     }
 _postgresDict = Vulnerability(_postgresDict)
 
-vulnerabilities = [_ircd, _distcc, _vsftpd, _smtpScanner, _mysqlBruteForce, _tomcatDict, _sambaDict, _apacheDict, _postgresDict]
+vulnerabilities = [_ircd, _distcc, _vsftpd, _smtpScanner, _tomcatDict, _sambaDict, _apacheDict, _postgresDict]

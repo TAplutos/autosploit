@@ -8,10 +8,9 @@ import os
 sys.path.append(os.getcwd() + "/lib/")
 from lib.msfrpc4 import *
 import nmap_dest
-import random as rd
 import re
 import utils
-import subprocess
+import scanNetwork
 from knownVulnerabilities import vulnerabilities
 
 CHECK_MODE = False # will check for exploits rather than running them when can
