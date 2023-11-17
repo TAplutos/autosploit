@@ -23,6 +23,19 @@ class Vulnerability():
         else: self.canCheck = True
         if "outputPatternMatch" in classDict: self.outputPatternMatch = classDict["outputPatternMatch"]
         else: self.outputPatternMatch = None
+        # will this exploit get us a list of usernames to use
+        if "addUserNames" in classDict: self.addUserNames = classDict["addUserNames"]
+        else: self.addUserNames = False
+
+        # run options for the module
+        if "options" in classDict:
+            options = classDict["options"]
+            self.options = dict()
+            for (key,value) in options:
+                self.options[key] = value
+        else:
+            self.options = None
+
         self.session = None # TODO: create a method to set and get this
 
 
@@ -92,4 +105,28 @@ _smtpScannerDict = {
     } 
 _smtpScanner= Vulnerability(_smtpScannerDict)
 
-vulnerabilities = [_ircd, _distcc, _vsftpd, _smtpScanner]
+_mysqlBruteForceDict = {
+    "keywords": "",
+    "optionalKeywords": "3306,mysql,Support41Auth",
+    "minOptionalKeyTermsThatMustMatch": 2,
+    "caseSensitiveKeyTermMatch": True,
+    "moduleName": "scanner/mysql/mysql_login",
+    "description": "SQL login spam",
+    "exploitType": "auxiliary",
+    "payload": None,
+    "outputPatternMatch": "MYSQL - Success: .*",
+    "addUserNames": True,
+    "maxRuntime": 10000,
+    "options": [("ANONYMOUS_LOGIN", True),
+                ("BLANK_PASSWORDS", True),
+                ("DB_ALL_PASS", True),
+                ("DB_ALL_USERS", True),
+                ("USER_AS_PASS", True),
+                ("VERBOSE", True),
+                ("USER_FILE", "USERNAMES.txt"),
+                ("PASS_FILE", "PASSWORDS.txt"),
+                ("USERPASS_FILE", "")]
+    }
+_mysqlBruteForce = Vulnerability(_mysqlBruteForceDict)
+
+vulnerabilities = [_ircd, _distcc, _vsftpd, _smtpScanner, _mysqlBruteForce]

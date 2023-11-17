@@ -19,7 +19,8 @@ RUN_NMAP = False # set this to false when you want to test on metasploit machine
 NMAP_AGGRESSIVENESS = 2
 # in order of increasing levels of fucking around (and also in increasing levels of finding out)
 NMAP_POSSIBLE_ARGS = ["", "-A -T4", "-p- -sV -O", "-p- -sV -O -A -T5 -sC -Pn"]
-EXPLOIT_NUM = 3 # for testing
+EXPLOIT_NUM = 4 # for testing
+TEST_MODE = True
 EXPLOIT_NUM = min(EXPLOIT_NUM, len(vulnerabilities) - 1)
 RHOSTS = ["192.168.130.128"] # PUT YOUR HOST HERE or feed it in through command line argument
 if len(sys.argv) > 1:
@@ -30,6 +31,21 @@ startTime = time.time()
 def runExploits(vulnerabilitiesToUse = set([vulnerabilities[EXPLOIT_NUM]])):
     consoles = []
     savedOutputInfo = dict()
+
+    # load the list of default passwords and usernames and overwrite the existing files so we can add more terms later
+    usernames = utils.default_usernames
+    passwords = utils.default_passwords
+    userFile = open("USERNAMES.txt", "w")
+    for username in usernames:
+        userFile.write(username + "\n")
+    userFile.close()
+    usernames = []
+    passFile = open("PASSWORDS.txt", "w")
+    for password in passwords:
+        passFile.write(password + "\n")
+    passFile.close()
+    passwords = []
+
     for (i, vulnerability) in enumerate(vulnerabilitiesToUse):
         # once one session is created, don't perform any of the other exploits
         if vulnerability.exploitType == "exploit" and len(client.sessions.list) > 0:
@@ -44,6 +60,12 @@ def runExploits(vulnerabilitiesToUse = set([vulnerabilities[EXPLOIT_NUM]])):
         if exploit.missing_required:
             print("missing options:", exploit.missing_required)
         
+        if vulnerability.options.items():
+            print("Settings:")
+        for option, value in vulnerability.options.items():
+            print(option + ":", value)
+            exploit[option] = value
+
         if CHECK_MODE & vulnerability.canCheck: # CHECK THE EXPLOIT's FEASIBILITY
             print("#" * 34, "ONLY CHECKING EXPLOITABILITY", "#" * 34)
             print("VULNERABILITY MODULE:", vulnerability.module)
@@ -83,6 +105,16 @@ def runExploits(vulnerabilitiesToUse = set([vulnerabilities[EXPLOIT_NUM]])):
                     matchedText = re.search(vulnerability.outputPatternMatch, line)
                     if matchedText:
                         savedOutputInfo[i].append(matchedText[0])
+            if vulnerability.addUserNames:
+                for line in savedOutputInfo[i]:
+                    idx = savedOutputInfo[i].find(":")
+                    if idx >= 0:
+                        names = savedOutputInfo[i][i+1:].strip().split(",")
+                        usernames += names
+                userFile = open("USERNAMES.txt", "w")
+                for username in usernames:
+                    userFile.write(username + "\n")
+                userFile.close()
             print("#" * 34, "FINISHED", vulnerability.exploitType + ":", vulnerability.description, "#" * 34)
 
     print("ALL EXPLOITS SETUP AND RUNNING")
@@ -120,8 +152,9 @@ if __name__ == "__main__":
     # resultModules.append(dict_module)
 
     ######### TEST YOUR VULNERABILITY HERE (change the number below to the index of your exploit in the vulnerabilities list)
-    # savedOutputInfo = runExploits()
-    # exit()
+    if TEST_MODE:
+        savedOutputInfo = runExploits()
+        exit()
     ##############################################################################################
 
     nmapArgs = NMAP_POSSIBLE_ARGS[NMAP_AGGRESSIVENESS]
