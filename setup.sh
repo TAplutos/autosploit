@@ -4,6 +4,7 @@ sudo apt-get --assume-yes update --fix-missing
 sudo apt --assume-yes install snap
 sudo apt --assume-yes install pip
 sudo apt --assume-yes install pip
+sudo apt --assume-yes install net-tools
 snap install nmap
 python3 -m pip install --upgrade pip
 pip install pymetasploit3

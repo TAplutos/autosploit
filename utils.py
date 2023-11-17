@@ -3,6 +3,9 @@
 #test
 import subprocess
 
+default_passwords = ["admin","manager","role1","root","tomcat","s3cret","vagrant","QLogic66","password","Password1","changethis","r00t","toor","password1","j2deployer","OvW*busr1","kdsxc","owaspba","ADMIN","xampp"]
+default_usernames = ["admin","manager","role1","role","root","tomcat","both","QCC","j2deployer","ovwebusr","cxsdk","ADMIN","xampp"]
+
 def runThisCommand(command):
     command = command.split()
     result = subprocess.run(command, stdout=subprocess.PIPE)
