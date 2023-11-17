@@ -16,4 +16,3 @@ def scanNetworkForIPs():
 
 def scanNetworkForIPRanges():
     return _scanNetwork("inet [0-9]+\.[0-9]+\.[0-9]+\.[0-9]+/[0-9]*")
-print(scanNetworkForIPRanges())

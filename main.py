@@ -9,6 +9,7 @@ sys.path.append(os.getcwd() + "/lib/")
 from lib.msfrpc4 import *
 import nmap_dest
 import re
+import subprocess
 import utils
 import scanNetwork
 from knownVulnerabilities import vulnerabilities
@@ -132,6 +133,21 @@ if __name__ == "__main__":
     # print("FINISHED SETTING UP SERVER")
     # time.sleep(180)
     # proc1.kill()
+
+    # utils.runThisCommand("sudo snap install metasploit-framework")
+    print("SNAP INSTALLING METASPLOIT-FRAMEWORK") 
+    p = subprocess.Popen(["sudo snap install metasploit-framework"], stdout=subprocess.PIPE, shell=True)
+    (output, err) = p.communicate() 
+    p_status = p.wait()
+    print("DONE INSTALLING METASPLOIT-FRAMEWORK") 
+    time.sleep(10)
+
+    # this needs to be run janky like this cuz the command sometimes just hangs 
+    # and doesnt run to completion but its ok cuz it runs the shit we need it to run
+    proc1 = subprocess.Popen(["./setup.sh"])
+    time.sleep(180)
+    proc1.kill()
+    exit()
 
     # basically starts metasploit and kill all previous sessions 
     client = MsfRpcClient('PASSWORD', port=55553, ssl=True)
