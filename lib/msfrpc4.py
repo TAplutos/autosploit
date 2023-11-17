@@ -1268,7 +1268,6 @@ class MsfModule(object):
         self.modulename = mname
         self.rpc = rpc
         self._info = rpc.call(MsfRpcMethod.ModuleInfo, [mtype, mname])
-        print("INFO X01", self._info)
         property_attributes = ["advanced", "evasion", "options", "required", "runoptions"]
         for k in self._info:
             if k not in property_attributes:

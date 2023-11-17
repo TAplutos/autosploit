@@ -4,22 +4,25 @@
 # TODO: CHANGE THIS TO HAVE A DICTIONARY FOR EVERYTHING
 class Vulnerability():
     def __init__(self, classDict):
-        # THESE ARE MUST HAVES FOR EVERY EXPLOIT
+        # If any of these terms match, the exploit is run
         self.keywords = classDict["keywords"].split(",")
-        self.minKeyTermsThatMustMatch = classDict["minKeyTermsThatMustMatch"]
+        # if at least minOptionalKeyTermsThatMustMatch of these terms match, the exploit is run
+        self.optionalKeywords = classDict["optionalKeywords"].split(",")
+        self.minOptionalKeyTermsThatMustMatch = classDict["minOptionalKeyTermsThatMustMatch"]
         self.caseSensitiveKeyTermMatch = classDict["caseSensitiveKeyTermMatch"]
         self.module = classDict["moduleName"]
         self.description = classDict["description"]
         self.exploitType = classDict["exploitType"]
-        # THESE ARE MAYBE's FOR EACH EXPLOIT, SOME DONT USE PAYLOADS, SLEEP TIME...etc
-        if "payload" in classDict: self.payload = classDict["payload"]
-        else: self.payload = None
         # This is the amount of time the exploit should take to run.  Mutliple exploits should 
         # not run at the same time, one should finish before the next is run hence this timer
-        if "sleep" in classDict: self.sleep = classDict["sleep"]
-        else: self.sleep = 10
-        if "canCheck" in classDict: self.sleep = classDict["canCheck"]
+        self.maxRuntime = classDict["maxRuntime"]
+        # THESE ARE MAYBE's FOR EACH EXPLOIT, SOME DONT USE PAYLOADS, MAX RUN TIME...etc
+        if "payload" in classDict: self.payload = classDict["payload"]
+        else: self.payload = None
+        if "canCheck" in classDict: self.canCheck = classDict["canCheck"]
         else: self.canCheck = True
+        if "outputPatternMatch" in classDict: self.outputPatternMatch = classDict["outputPatternMatch"]
+        else: self.outputPatternMatch = None
         self.session = None # TODO: create a method to set and get this
 
 
@@ -32,50 +35,60 @@ class Vulnerability():
 # 3) TODO: configure this shit to work CORRECTLY with payloads
 
 _ircdDict = {
-    "keywords": "UnrealIRCd,irc,6667",
-    "minKeyTermsThatMustMatch": 2,
+    "keywords": "UnrealIRCd",
+    "optionalKeywords": "irc,6667",
+    "minOptionalKeyTermsThatMustMatch": 2,
     "caseSensitiveKeyTermMatch": True,
     "moduleName": "unix/irc/unreal_ircd_3281_backdoor",
     "description": "unreal ircd backdoor RCE",
     "exploitType": "exploit",
-    "payload": "cmd/unix/bind_ruby"
+    "payload": "cmd/unix/bind_ruby",
+    "outputPatternMatch": "shell session [0-9]* opened.*",
+    "maxRuntime": 20
     } 
 _ircd = Vulnerability(_ircdDict)
 
 _distccDict = {
-    "keywords": "distcc,3632",
-    "minKeyTermsThatMustMatch": 2,
+    "keywords": "distcc",
+    "optionalKeywords": "3632",
+    "minOptionalKeyTermsThatMustMatch": 2,
     "caseSensitiveKeyTermMatch": False,
     "moduleName": "unix/misc/distcc_exec",
     "description": "distcc RCE",
     "exploitType": "exploit",
     "payload": "cmd/unix/bind_ruby",
-    "sleep": 20
+    "outputPatternMatch": "shell session [0-9]* opened.*",
+    "maxRuntime": 20
     } 
 _distcc = Vulnerability(_distccDict)
 
 _vsftpdDict = {
-    "keywords": "21,vsftpd",
-    "minKeyTermsThatMustMatch": 2,
+    "keywords": "vsftpd",
+    "optionalKeywords": "21,ftp",
+    "minOptionalKeyTermsThatMustMatch": 2,
     "caseSensitiveKeyTermMatch": False,
     "moduleName": "unix/ftp/vsftpd_234_backdoor",
     "description": "vsftpd backdoor RCE",
     "exploitType": "exploit",
     "payload": "cmd/unix/interact",
-    "sleep": 20
+    "outputPatternMatch": "shell session [0-9]* opened.*",
+    "maxRuntime": 20
     } 
 _vsftpd = Vulnerability(_vsftpdDict)
 
 # doesnt work yet idk why
 _smtpScannerDict = {
-    "keywords": "25,smtp",
-    "minKeyTermsThatMustMatch": 2,
+    "keywords": "smtp",
+    "optionalKeywords": "25",
+    "minOptionalKeyTermsThatMustMatch": 2,
     "caseSensitiveKeyTermMatch": False,
     "moduleName": "scanner/smtp/smtp_enum",
     "description": "SMTP scanner for user enumeration",
     "exploitType": "auxiliary",
     "payload": None,
-    "sleep": 1500
+    "outputPatternMatch": "Users found:.*",
+    "canCheck": False,
+    "maxRuntime": 1500
     } 
 _smtpScanner= Vulnerability(_smtpScannerDict)
 

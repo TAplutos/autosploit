@@ -27,11 +27,20 @@ def grepPositions(input_str, word):
 
     return positions
 
+def getSuccessMessage(output): 
+    for i in range(len(output)):
+        if output[i] == "*" and i >= 30:
+            output = output[i-1:]
+            break
+    
+    # del arrayOutput[-2:]
+    return output
+
 def extractResult(output): 
     arrayOutput = output.splitlines()
-    # for index,line in enumerate(arrayOutput):
-    #     if("DisablePayloadHandler" in line):
-    #         del arrayOutput[:index+1]
+    for index,line in enumerate(arrayOutput):
+        if("DisablePayloadHandler" in line):
+            del arrayOutput[:index+1]
     
     # del arrayOutput[-2:]
     return arrayOutput
