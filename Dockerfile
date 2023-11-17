@@ -3,14 +3,18 @@ FROM ubuntu:latest
 
 # Install necessary dependencies
 RUN apt-get update && \
-    apt-get install -y \
+    apt-get --assume-yes install \
+    apt-utils \
     snap \
     snapd \
     python3 \
     python3-pip \
+    net-tools \
     nmap \
+    sudo \
     && rm -rf /var/lib/apt/lists/*
 
+ENV PATH=$PATH:/snap/bin
 
 # Set the working directory to /app
 WORKDIR /app

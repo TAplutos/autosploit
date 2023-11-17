@@ -135,6 +135,7 @@ if __name__ == "__main__":
     # proc1.kill()
 
     # utils.runThisCommand("sudo snap install metasploit-framework")
+    print(utils.runThisCommand("whoami"))
     print("SNAP INSTALLING METASPLOIT-FRAMEWORK") 
     p = subprocess.Popen(["sudo snap install metasploit-framework"], stdout=subprocess.PIPE, shell=True)
     (output, err) = p.communicate() 
