@@ -129,4 +129,22 @@ _mysqlBruteForceDict = {
     }
 _mysqlBruteForce = Vulnerability(_mysqlBruteForceDict)
 
-vulnerabilities = [_ircd, _distcc, _vsftpd, _smtpScanner, _mysqlBruteForce]
+_tomcatDict = {
+    "keywords": "http",
+    "optionalKeywords": "8180,http,Apache Tomcat/Coyote JSP engine 1.1",
+    "minOptionalKeyTermsThatMustMatch": 2,
+    "caseSensitiveKeyTermMatch": True,
+    "moduleName": "multi/http/tomcat_mgr_upload",
+    "description": "Port 8180 Apache Tomcat Exploit",
+    "exploitType": "exploit",
+    "payload": None,
+    "outputPatternMatch": "Tomcat - Success: .*",
+    "addUserNames": True,
+    "maxRuntime": 10000,
+    "options": [("HttpPassword", "tomcat"),
+                ("HttpUsername", "tomcat"),
+                ("RPORT", "8180")]
+    }
+_tomcatDict = Vulnerability(_tomcatDict)
+
+vulnerabilities = [_ircd, _distcc, _vsftpd, _smtpScanner, _mysqlBruteForce, _tomcatDict]
