@@ -37,8 +37,7 @@ def run_setup_script():
         # Function to close the popup
         def close_popup():
             popup.destroy()
-            tk.messagebox.showinfo("Initial Setup Script", "Initial setup completed, startup your server and have fun.")
-
+            
         # Schedule the popup to close after 180 seconds (3 minutes)
         popup.after(180000, close_popup)
         
@@ -141,8 +140,8 @@ button = tk.Button(root, text="Submit", command=retrieve_input)
 button.pack()
 
 # Button to start metasploit
-server_button = tk.Button(root, text="Start Metasploit", command=start_metasploit)
-server_button.pack()
+metasploit_button = tk.Button(root, text="Start Metasploit", command=start_metasploit)
+metasploit_button.pack()
 
 # Start Nmap scan button
 nmap_button = tk.Button(root, text="Submit Nmap Scan", command=initiate_nmap_scan)
@@ -160,6 +159,17 @@ rhosts_combobox.bind("<<ComboboxSelected>>", on_rhosts_select)
 root.mainloop()
 
 # We need to set the bellow to be called via the GUI
+# We basically have to setup the fuctions to be called via the buttons unless we want to try messing with threading in which case we could have the automated stuff just
+# blocked by a pause that is broken by a button press then it does all the auto stuff. We could also put all the stuff into one giant function and have that called with a RUN button.
+#
+# Setup functions that are called via the buttons:
+# def do_thing():
+#     print("Doing thing")
+#     #put thing we doing here
+#
+# Then we add the button for that with:
+# do_thing_button = tk.Button(root, text="Do Thing", command=do_thing)
+# do_thing_button.pack()
 
 if __name__ == "__main__":
     #############################################################################
@@ -171,10 +181,10 @@ if __name__ == "__main__":
     ### COMMENT THIS OUT ONCE YOU RUN THE PROGRAM ONCE, must run every time you restart computer###
 
     # basically starts metasploit and kill all previous sessions 
-    client = MsfRpcClient('PASSWORD', port=55553, ssl=True)
-    for k in client.sessions.list.keys():
-        client.sessions.session(str(k)).stop()
-    print("session list =", client.sessions.list)
+    #client = MsfRpcClient('PASSWORD', port=55553, ssl=True)
+    #for k in client.sessions.list.keys():
+    #    client.sessions.session(str(k)).stop()
+    #print("session list =", client.sessions.list)
 
     ######### TEST YOUR VULNERABILITY HERE (change the number below to the index of your exploit in the vulnerabilities list)
     # Test your exploits here first cuz they won't work as reliably when all exploits are run at once below
