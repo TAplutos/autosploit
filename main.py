@@ -19,6 +19,7 @@ from tkinter import ttk
 initial_setup_done = False
 server_setup_done = False
 RHOSTS = None #Holds our target IP addresses
+client = None #Holds our metasploit client
 
 # Does initial setup
 def run_setup_script():
@@ -107,6 +108,7 @@ def on_rhosts_select(event):
 
 # Starts metasploit and kills all previous sessions
 def start_metasploit():
+    global client # We need to make client global so we can use it in other functions
     client = MsfRpcClient('PASSWORD', port=55553, ssl=True)
     for k in client.sessions.list.keys():
         client.sessions.session(str(k)).stop()
