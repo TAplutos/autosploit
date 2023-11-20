@@ -158,6 +158,8 @@ def add_to_rhosts():
         RHOSTS.append(new_ip)
         update_rhosts_combobox(RHOSTS + ["Select RHOST"])  # Update dropdown values
         new_ip_entry.delete(0, tk.END)  # Clear the input field
+        rhosts_combobox.current(len(RHOSTS) - 1)  # Select the newly added IP
+        on_rhosts_select(None)  # Trigger the selection event manually
 
 ###################################### Functions from Main ######################################
 
