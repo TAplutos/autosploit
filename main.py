@@ -174,6 +174,11 @@ def runExploits(vulnerabilitiesToUse = set([vulnerabilities[EXPLOIT_NUM]])):
     consoles = []
     savedOutputInfo = dict()
 
+    global client
+    if client is None: #If there is no client, then we can't run exploits
+        print("Metasploit client is not initialized.")
+        return
+
     # load the list of default passwords and usernames and overwrite the existing files so we can add more terms later
     usernames = utils.default_usernames
     passwords = utils.default_passwords
@@ -309,8 +314,12 @@ def test_mode(): # Runs the test mode
 
         # Function to run when Submit is clicked
         def on_submit():
+            global client
             selected_vulnerability = vulnerability_dropdown.get()
             entered_number = vulnerability_number_entry.get()
+            
+            if client is None:
+                start_metasploit()  # Initialize the Metasploit client if not already done
             
             if entered_number.isdigit():
                 vulnerability_index = int(entered_number) - 1  # Adjust if your indexing starts from 1
