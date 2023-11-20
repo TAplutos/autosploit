@@ -122,7 +122,7 @@ def on_rhosts_select(event): # Updates the RHOSTS variable when a new item is se
     global RHOSTS
     selected_value = rhosts_combobox.get()
     if selected_value and selected_value != "Select RHOST":
-        RHOSTS = selected_value
+        RHOSTS = [selected_value]
         print(f"RHOSTS set to: {RHOSTS}")  # For debugging
 
 
