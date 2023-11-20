@@ -21,7 +21,7 @@ from tkinter import messagebox, simpledialog, ttk
 initial_setup_done = False # For button disable
 server_setup_done = False # For button disable
 TEST_MODE = False # For test mode to be called
-RHOSTS = ["Select RHOST"] # Holds our target IP addresses
+RHOSTS = [] # Holds our target IP addresses
 client = None # Holds our metasploit client
 
 
