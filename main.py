@@ -13,19 +13,154 @@ import subprocess
 import utils
 import scanNetwork
 from knownVulnerabilities import vulnerabilities
+import tkinter as tk
+from tkinter import messagebox, simpledialog, ttk
 
+
+###################################### GUI Variables ######################################
+initial_setup_done = False # For button disable
+server_setup_done = False # For button disable
+TEST_MODE = False # For test mode to be called
+RHOSTS = ["RHOSTS"] # Holds our target IP addresses
+client = None # Holds our metasploit client
+test_mode_var = tk.IntVar() # Create a variable to store the state of the test mode checkbox
+
+
+###################################### OG Variables ######################################
 CHECK_MODE = False # will check for exploits rather than running them when can
 RUN_NMAP = False # set this to false when you want to test on metasploit machine and assume all exploits will run
 NMAP_AGGRESSIVENESS = 2
 # in order of increasing levels of fucking around (and also in increasing levels of finding out)
 NMAP_POSSIBLE_ARGS = ["", "-A -T4", "-p- -sV -O", "-p- -sV -O -A -T5 -sC -Pn"]
-EXPLOIT_NUM = 4 # for testing
-TEST_MODE = True
+EXPLOIT_NUM = 4 # for testingsd
+#TEST_MODE = True
 EXPLOIT_NUM = min(EXPLOIT_NUM, len(vulnerabilities) - 1)
-RHOSTS = ["192.168.130.128"] # PUT YOUR HOST HERE or feed it in through command line argument
+#RHOSTS = ["192.168.130.128"] # PUT YOUR HOST HERE or feed it in through command line argument
 if len(sys.argv) > 1:
     RHOSTS = list(sys.argv[1])
 startTime = time.time()
+
+
+
+###################################### GUI Functions ######################################
+
+def run_setup_script(): # The intial setup script that runs the initial_setup.sh file
+    global initial_setup_done, setup_button
+    if not initial_setup_done:
+        subprocess.Popen(["./initial_setup.sh"], shell=True)
+        initial_setup_done = True
+        setup_button.config(state="disabled")
+        
+        # Create a top-level pop-up window
+        popup = tk.Toplevel(root)
+        popup.title("Initial Setup in Progress")
+        message = tk.Label(popup, text="Initial setup started, please wait 3 minutes. \nThis window will close automatically once it's done! \n\nNote: you will need to input your password in terminal to properly run the sudo commands.\n\n Note: If it says you have the requirements already then feel free to close this window and move on.")
+        message.pack()
+
+        # Function to close the popup
+        def close_popup():
+            popup.destroy()
+            
+        # Schedule the popup to close after 180 seconds (3 minutes)
+        popup.after(180000, close_popup)
+
+
+def run_server_script(): # Sets up msfconsole RPC server
+    global server_setup_done, server_button
+    if not server_setup_done:
+        subprocess.Popen(["./setup.sh"], shell=True)
+        server_setup_done = True
+        server_button.config(state="disabled")
+       
+       # Create a top-level pop-up window
+        popup = tk.Toplevel(root)
+        popup.title("Server Setup in Progress")
+        message = tk.Label(popup, text="Server setup started, please wait 20 seconds. \nThis window will close automatically once it's done! \n\nNote: You only need to run this if you restarted your computer since the last time you ran this setup.")
+        message.pack()
+
+        # Function to close the popup
+        def close_popup():
+            popup.destroy()
+            tk.messagebox.showinfo("Server Setup Script", "Server setup completed, Go have fun.")
+
+        # Schedule the popup to close after 10 seconds
+        popup.after(20000, close_popup)
+
+
+def retrieve_input(): # Gets nmap aggressiveness from GUI
+    # Get the input from the entry widget
+    input_value = entry.get()
+    try:
+        # Convert to integer and validate range
+        aggressiveness = int(input_value)
+        if 0 <= aggressiveness <= 5:
+            # Call your Nmap scan function here with aggressiveness
+            print(f"Running Nmap scan with aggressiveness {aggressiveness}")
+        else:
+            print("Please enter a valid number between 0 and 5. Note that higher is faster but more detectable.")
+    except ValueError:
+        print("Please enter a valid integer.")
+
+
+def initiate_nmap_scan(): # Runs the Nmap scan
+    # Assuming aggressiveness is obtained from the GUI
+    aggressiveness = int(entry.get())
+    if 0 <= aggressiveness <= 5:
+        # Call your Nmap scan function here with aggressiveness
+        nmap_dest.run_scan(aggressiveness)  # Replace with actual function call
+        print(f"Running Nmap scan with aggressiveness {aggressiveness}")
+    else:
+        tk.messagebox.showwarning("Warning", "Please enter a valid number between 0 and 5.")
+
+
+def update_rhosts_combobox(new_items): # Updates the RHOSTS combobox with new items
+    rhosts_combobox['values'] = new_items
+    if new_items:
+        rhosts_combobox.current(0)  # Optionally, set the first item as the default selection
+
+
+def on_rhosts_select(event): # Updates the RHOSTS variable when a new item is selected
+    global RHOSTS
+    selected_value = rhosts_combobox.get()
+    if selected_value and selected_value != "Select RHOST":
+        RHOSTS = selected_value
+        print(f"RHOSTS set to: {RHOSTS}")  # For debugging
+
+
+def start_metasploit(): # Starts metasploit and kills all previous sessions
+    global client # We need to make client global so we can use it in other functions 
+    client = MsfRpcClient('PASSWORD', port=55553, ssl=True)
+    for k in client.sessions.list.keys():
+        client.sessions.session(str(k)).stop()
+    print("Sessions list (should be empty):", client.sessions.list)
+    for k in client.jobs.list.keys():
+        client.jobs.stop(str(k))
+    print("Jobs list (should be empty)", client.jobs.list)
+    for console in client.consoles.list:
+        k = console["id"]
+        client.consoles.console(str(k)).destroy()
+    print("Consoles (should be empty):", client.consoles.list)
+    print()
+
+
+def toggle_test_mode():
+    if test_mode_var.get() == 1:
+        print("Test Mode is ON")
+        # Additional actions when Test Mode is enabled
+    else:
+        print("Test Mode is OFF")
+        # Additional actions when Test Mode is disabled
+
+
+def add_to_rhosts():
+    global RHOSTS
+    new_ip = new_ip_entry.get()
+    if new_ip:  # Check if the new IP field is not empty
+        RHOSTS.append(new_ip)
+        update_rhosts_combobox(RHOSTS + ["Select RHOST"])  # Update dropdown values
+        new_ip_entry.delete(0, tk.END)  # Clear the input field
+
+###################################### Functions from Main ######################################
 
 # Test your exploits here first cuz they won't work as reliably when all exploits are run at once below
 def runExploits(vulnerabilitiesToUse = set([vulnerabilities[EXPLOIT_NUM]])):
@@ -126,7 +261,230 @@ def runExploits(vulnerabilitiesToUse = set([vulnerabilities[EXPLOIT_NUM]])):
     print("SESSION LIST:", client.sessions.list)
     return savedOutputInfo
 
+
+def utils_command(): # Runs a command in the utils.py file
+    # utils.runThisCommand("sudo snap install metasploit-framework")
+        print(utils.runThisCommand("whoami"))
+        print(utils.runThisCommand("sudo systemctl enable snapd.service"))
+        print(utils.runThisCommand("sudo systemctl start snapd.service"))
+        time.sleep(5)
+
+        print("SNAP INSTALLING METASPLOIT-FRAMEWORK") 
+        p = subprocess.Popen(["sudo snap install metasploit-framework"], stdout=subprocess.PIPE, shell=True)
+        (output, err) = p.communicate() 
+        p_status = p.wait()
+        print("DONE INSTALLING METASPLOIT-FRAMEWORK") 
+        time.sleep(10)
+
+
+def test_mode():
+    global TEST_MODE
+    if TEST_MODE:
+        # Create a popup window for test mode
+        test_popup = tk.Toplevel(root)
+        test_popup.title("Test Mode")
+
+        # Label for dropdown
+        test_label = tk.Label(test_popup, text="Select a Vulnerability to Test:")
+        test_label.pack(pady=(10, 0))
+
+        # Dropdown for vulnerabilities
+        vulnerability_options = [vuln.description for vuln in vulnerabilities]  # Assuming vulnerabilities is a list of objects
+        vulnerability_dropdown = ttk.Combobox(test_popup, values=vulnerability_options)
+        vulnerability_dropdown.pack(pady=5)
+
+        # Input for manual vulnerability number entry
+        vulnerability_number_label = tk.Label(test_popup, text="Or enter a Vulnerability number:")
+        vulnerability_number_label.pack(pady=(10, 0))
+
+        vulnerability_number_entry = tk.Entry(test_popup)
+        vulnerability_number_entry.pack(pady=5)
+
+        # Function to run when Submit is clicked
+        def on_submit():
+            selected_vulnerability = vulnerability_dropdown.get()
+            entered_number = vulnerability_number_entry.get()
+            
+            if entered_number.isdigit():
+                vulnerability_index = int(entered_number) - 1  # Adjust if your indexing starts from 1
+                runExploits([vulnerabilities[vulnerability_index]])
+            elif selected_vulnerability in vulnerability_options:
+                vulnerability_index = vulnerability_options.index(selected_vulnerability)
+                runExploits([vulnerabilities[vulnerability_index]])
+            else:
+                messagebox.showerror("Error", "Please select a valid vulnerability or enter a number.")
+            
+            test_popup.destroy()
+
+        # Submit button for the popup
+        submit_button = tk.Button(test_popup, text="Submit", command=on_submit)
+        submit_button.pack(pady=(5, 10))
+
+    else:
+        messagebox.showinfo("Test Mode", "TEST_MODE is False, please set it to True to run exploits")
+
+
+def full_exploitation_cycle():
+        global NMAP_AGGRESSIVENESS, RHOSTS, RUN_NMAP, client
+        
+        nmapArgs = NMAP_POSSIBLE_ARGS[NMAP_AGGRESSIVENESS]
+        for RHOST in RHOSTS:
+            print("X" * 34, "BEGINNING OF OUTPUT FOR", RHOST,"X" * 34)
+            # Decides if we want to run nmap or just assumes all outputs work
+            if RUN_NMAP: # TODO: make option so instead of not running nmap, take file input as hypothetical output of NMAP
+                ######## RECONAISSANCE PHASE ########
+                nmapOutput = nmap_dest.nmap_xml_output(RHOST, nmapArgs)
+                print(nmapOutput)
+                if (nmapOutput[1][0:22] == "Note: Host seems down."):
+                    print("Host seems down. Exiting.")
+                    exit()
+
+                ######## WEAPONIZATION PHASE ########
+                vulnerabilitiesToUse = set()
+                vulnInfos = []
+                for i in range(len(vulnerabilities)):
+                    vulnInfos.append(dict())
+                    vulnInfos[i]["keywords"] = set()
+                    vulnInfos[i]["optionalKeywords"] = set()
+                # Scan nmap output for key terms
+                for line in nmapOutput:
+                    # Detect what keywords each line of the nmap output contains and compare those to the descriptions
+                    # for each known vulnerability and add matched key terms to vulnInfosDict
+                    for (i, vulnerability) in enumerate(vulnerabilities):
+                        flag = re.IGNORECASE
+                        if vulnerability.caseSensitiveKeyTermMatch:
+                            flag = 0
+                        for keyword in vulnerability.keywords:
+                            if re.search(keyword, line, flag):
+                                vulnInfos[i]["keywords"].add(keyword)
+                        for optionalKeyword in vulnerability.optionalKeywords:
+                            if re.search(optionalKeyword, line, flag):
+                                vulnInfos[i]["optionalKeywords"].add(optionalKeyword)
+                
+                # Determine which vulns to use based off NMAP scan
+                # If we match a keyterm or find minOptionalKeyTermsThatMustMatch optional key terms
+                for (i, vulnInfo) in enumerate(vulnInfos):
+                    if len(vulnInfo["keywords"]) > 0 or len(vulnInfo["optionalKeywords"]) > vulnerabilities[i].minOptionalKeyTermsThatMustMatch:
+                        print("X" * 34, vulnerabilities[i].description, "EXPLOIT FOUND", "*" * 34)
+                        vulnerabilitiesToUse.add(vulnerabilities[i])
+            else:
+                # here we don't run nmap and just assume that all vulnerabilities work
+                print("SKIPPING NMAP PHASE, RUNNING ALL EXPLOITS WORK")
+                vulnerabilitiesToUse = vulnerabilities
+            
+            ######## DELIVERY, EXPLOITATION, INSTALLATION PHASE ########
+            savedOutputInfo = runExploits(vulnerabilitiesToUse)
+
+            ####### Print some info on the sessions created
+            print("@" * 34, "ALL EXPLOITS FINISHED", "@" * 34)
+            sessions = client.sessions.list
+            numSessions = 0
+            for k in client.sessions.list.keys():
+                numSessions += 1
+            print("Number of sessions created:", numSessions)
+
+            print("Testing sessions (two lines should appear below, the result of the 'whoami' and 'pwd' commands):")
+            for k in client.sessions.list.keys():
+                shell = client.sessions.session(str(k))
+                shell.write('whoami')
+                shell.write('pwd')
+                print(shell.read())
+
+            # print out saved info from running exploits
+            print("$" * 34, "SAVED OUTPUT INFO", "$" * 34)
+            for v in savedOutputInfo.keys():
+                print("SAVED OUTPUT FOR EXPLOIT", v, "(" + vulnerabilities[v].description + "):")
+                for line in savedOutputInfo[v]:
+                    print(line)
+
+###################################### The GUI ######################################
+
+# Create the GUI
+root = tk.Tk()
+root.title("Bootcon Pentesting Tool GUI v0.1")
+
+########## The Widgets ##########
+
+# Button to run initial setup script
+setup_button = tk.Button(root, text="Run Initial Setup", command=run_setup_script)
+setup_button.pack()
+
+# Button to run server script
+server_button = tk.Button(root, text="Run Server Setup", command=run_server_script)
+server_button.pack()
+
+# Checkbox for test mode
+test_mode_checkbox = tk.Checkbutton(root, text="Enable Test Mode", variable=test_mode_var, command=toggle_test_mode)
+test_mode_checkbox.pack()
+
+# Button for test mode
+test_mode_button = tk.Button(root, text="Test Mode", command=test_mode)
+test_mode_button.pack()
+
+# Input for aggressiveness of Nmap scan
+label = tk.Label(root, text="Enter the aggressiveness of the nmap scan (0-5):")
+label.pack()
+
+entry = tk.Entry(root)
+entry.pack()
+
+button = tk.Button(root, text="Submit", command=retrieve_input)
+button.pack()
+
+# Button to start metasploit
+metasploit_button = tk.Button(root, text="Start Metasploit", command=start_metasploit)
+metasploit_button.pack()
+
+# Start Nmap scan button
+nmap_button = tk.Button(root, text="Submit Nmap Scan", command=initiate_nmap_scan)
+nmap_button.pack()
+
+# New IP Entry Field
+new_ip_label = tk.Label(root, text="Enter new RHOST IP:")
+new_ip_label.pack()
+new_ip_entry = tk.Entry(root)
+new_ip_entry.pack()
+
+# Button to Add New IP to RHOSTS
+add_ip_button = tk.Button(root, text="Add IP to RHOSTS", command=add_to_rhosts)
+add_ip_button.pack()
+
+# RHost dropdown menu
+rhosts_combobox = ttk.Combobox(root)
+rhosts_combobox['values'] = ["Select RHOST", "Example 1", "Example 2"]  # Placeholder values
+rhosts_combobox.current(0)  # Set the combobox to show the first item
+rhosts_combobox.pack()
+
+rhosts_combobox.bind("<<ComboboxSelected>>", on_rhosts_select)
+
+# Button to run exploits function
+server_button = tk.Button(root, text="Run runExploits", command=runExploits)
+server_button.pack()
+
+# Button to run utils function
+server_button = tk.Button(root, text="Run utils_command", command=utils_command)
+server_button.pack()
+
+# Button to run big boi function
+server_button = tk.Button(root, text="Run full_exploitation_cycle", command=full_exploitation_cycle)
+server_button.pack()
+
+# Run the application (Remember everything that is used needs to be defined above this)
+root.mainloop()
+
+
+
+
+
+
+
+
+
+
+
+
 if __name__ == "__main__":
+    pass
     #############################################################################
     # RUN ./setup.sh TO SET EVERYTHING UP.  This is for automating the exploit only
     # proc1 = subprocess.Popen(["yes | ./setup.sh"])
@@ -134,116 +492,117 @@ if __name__ == "__main__":
     # time.sleep(180)
     # proc1.kill()
 
-    # utils.runThisCommand("sudo snap install metasploit-framework")
-    print(utils.runThisCommand("whoami"))
-    print(utils.runThisCommand("sudo systemctl enable snapd.service"))
-    print(utils.runThisCommand("sudo systemctl start snapd.service"))
-    time.sleep(5)
-
-    print("SNAP INSTALLING METASPLOIT-FRAMEWORK") 
-    p = subprocess.Popen(["sudo snap install metasploit-framework"], stdout=subprocess.PIPE, shell=True)
-    (output, err) = p.communicate() 
-    p_status = p.wait()
-    print("DONE INSTALLING METASPLOIT-FRAMEWORK") 
-    time.sleep(10)
+    ## utils.runThisCommand("sudo snap install metasploit-framework")
+    #print(utils.runThisCommand("whoami"))
+    #print(utils.runThisCommand("sudo systemctl enable snapd.service"))
+    #print(utils.runThisCommand("sudo systemctl start snapd.service"))
+    #time.sleep(5)
+    #
+    #print("SNAP INSTALLING METASPLOIT-FRAMEWORK") 
+    #p = subprocess.Popen(["sudo snap install metasploit-framework"], stdout=subprocess.PIPE, shell=True)
+    #(output, err) = p.communicate() 
+    #p_status = p.wait()
+    #print("DONE INSTALLING METASPLOIT-FRAMEWORK") 
+    #time.sleep(10)
 
     # this needs to be run janky like this cuz the command sometimes just hangs 
     # and doesnt run to completion but its ok cuz it runs the shit we need it to run
-    proc1 = subprocess.Popen(["./setup.sh"])
-    time.sleep(180)
-    proc1.kill()
-    exit()
+    #proc1 = subprocess.Popen(["./setup.sh"])
+    #time.sleep(180)
+    #proc1.kill()
+    #exit()
 
     # basically starts metasploit and kill all previous sessions 
-    client = MsfRpcClient('PASSWORD', port=55553, ssl=True)
-    for k in client.sessions.list.keys():
-        client.sessions.session(str(k)).stop()
-    print("Sessions list (should be empty):", client.sessions.list)
-    for k in client.jobs.list.keys():
-        client.jobs.stop(str(k))
-    print("Jobs list (should be empty)", client.jobs.list)
-    for console in client.consoles.list:
-        k = console["id"]
-        client.consoles.console(str(k)).destroy()
-    print("Consoles (should be empty):", client.consoles.list)
-    print()
+    #client = MsfRpcClient('PASSWORD', port=55553, ssl=True)
+    #for k in client.sessions.list.keys():
+    #    client.sessions.session(str(k)).stop()
+    #print("Sessions list (should be empty):", client.sessions.list)
+    #for k in client.jobs.list.keys():
+    #    client.jobs.stop(str(k))
+    #print("Jobs list (should be empty)", client.jobs.list)
+    #for console in client.consoles.list:
+    #    k = console["id"]
+    #    client.consoles.console(str(k)).destroy()
+    #print("Consoles (should be empty):", client.consoles.list)
+    #print()
 
     # output = self.client.consoles.console(console_id).run_module_with_output(exploit)                
     # dict_module['results'] = self.extractResult(output)
     # resultModules.append(dict_module)
 
     ######### TEST YOUR VULNERABILITY HERE (change the number below to the index of your exploit in the vulnerabilities list)
-    if TEST_MODE:
-        savedOutputInfo = runExploits()
-        exit()
+    #if TEST_MODE:
+    #    savedOutputInfo = runExploits()
+    #    exit()
     ##############################################################################################
 
-    nmapArgs = NMAP_POSSIBLE_ARGS[NMAP_AGGRESSIVENESS]
-    for RHOST in RHOSTS:
-        print("X" * 34, "BEGINNING OF OUTPUT FOR", RHOST,"X" * 34)
-        # Decides if we want to run nmap or just assumes all outputs work
-        if RUN_NMAP: # TODO: make option so instead of not running nmap, take file input as hypothetical output of NMAP
-            ######## RECONAISSANCE PHASE ########
-            nmapOutput = nmap_dest.nmap_xml_output(RHOST, nmapArgs)
-            print(nmapOutput)
-            if (nmapOutput[1][0:22] == "Note: Host seems down."):
-                print("Host seems down. Exiting.")
-                exit()
-
-            ######## WEAPONIZATION PHASE ########
-            vulnerabilitiesToUse = set()
-            vulnInfos = []
-            for i in range(len(vulnerabilities)):
-                vulnInfos.append(dict())
-                vulnInfos[i]["keywords"] = set()
-                vulnInfos[i]["optionalKeywords"] = set()
-            # Scan nmap output for key terms
-            for line in nmapOutput:
-                # Detect what keywords each line of the nmap output contains and compare those to the descriptions
-                # for each known vulnerability and add matched key terms to vulnInfosDict
-                for (i, vulnerability) in enumerate(vulnerabilities):
-                    flag = re.IGNORECASE
-                    if vulnerability.caseSensitiveKeyTermMatch:
-                        flag = 0
-                    for keyword in vulnerability.keywords:
-                        if re.search(keyword, line, flag):
-                            vulnInfos[i]["keywords"].add(keyword)
-                    for optionalKeyword in vulnerability.optionalKeywords:
-                        if re.search(optionalKeyword, line, flag):
-                            vulnInfos[i]["optionalKeywords"].add(optionalKeyword)
-            
-            # Determine which vulns to use based off NMAP scan
-            # If we match a keyterm or find minOptionalKeyTermsThatMustMatch optional key terms
-            for (i, vulnInfo) in enumerate(vulnInfos):
-                if len(vulnInfo["keywords"]) > 0 or len(vulnInfo["optionalKeywords"]) > vulnerabilities[i].minOptionalKeyTermsThatMustMatch:
-                    print("X" * 34, vulnerabilities[i].description, "EXPLOIT FOUND", "*" * 34)
-                    vulnerabilitiesToUse.add(vulnerabilities[i])
-        else:
-            # here we don't run nmap and just assume that all vulnerabilities work
-            print("SKIPPING NMAP PHASE, RUNNING ALL EXPLOITS WORK")
-            vulnerabilitiesToUse = vulnerabilities
-        
-        ######## DELIVERY, EXPLOITATION, INSTALLATION PHASE ########
-        savedOutputInfo = runExploits(vulnerabilitiesToUse)
-
-        ####### Print some info on the sessions created
-        print("@" * 34, "ALL EXPLOITS FINISHED", "@" * 34)
-        sessions = client.sessions.list
-        numSessions = 0
-        for k in client.sessions.list.keys():
-            numSessions += 1
-        print("Number of sessions created:", numSessions)
-
-        print("Testing sessions (two lines should appear below, the result of the 'whoami' and 'pwd' commands):")
-        for k in client.sessions.list.keys():
-            shell = client.sessions.session(str(k))
-            shell.write('whoami')
-            shell.write('pwd')
-            print(shell.read())
-
-        # print out saved info from running exploits
-        print("$" * 34, "SAVED OUTPUT INFO", "$" * 34)
-        for v in savedOutputInfo.keys():
-            print("SAVED OUTPUT FOR EXPLOIT", v, "(" + vulnerabilities[v].description + "):")
-            for line in savedOutputInfo[v]:
-                print(line)
+    #nmapArgs = NMAP_POSSIBLE_ARGS[NMAP_AGGRESSIVENESS]
+    #for RHOST in RHOSTS:
+    #    print("X" * 34, "BEGINNING OF OUTPUT FOR", RHOST,"X" * 34)
+    #    # Decides if we want to run nmap or just assumes all outputs work
+    #    if RUN_NMAP: # TODO: make option so instead of not running nmap, take file input as hypothetical output of NMAP
+    #        ######## RECONAISSANCE PHASE ########
+    #        nmapOutput = nmap_dest.nmap_xml_output(RHOST, nmapArgs)
+    #        print(nmapOutput)
+    #        if (nmapOutput[1][0:22] == "Note: Host seems down."):
+    #            print("Host seems down. Exiting.")
+    #            exit()
+    #
+    #        ######## WEAPONIZATION PHASE ########
+    #        vulnerabilitiesToUse = set()
+    #        vulnInfos = []
+    #        for i in range(len(vulnerabilities)):
+    #            vulnInfos.append(dict())
+    #            vulnInfos[i]["keywords"] = set()
+    #            vulnInfos[i]["optionalKeywords"] = set()
+    #        # Scan nmap output for key terms
+    #        for line in nmapOutput:
+    #            # Detect what keywords each line of the nmap output contains and compare those to the descriptions
+    #            # for each known vulnerability and add matched key terms to vulnInfosDict
+    #            for (i, vulnerability) in enumerate(vulnerabilities):
+    #                flag = re.IGNORECASE
+    #                if vulnerability.caseSensitiveKeyTermMatch:
+    #                    flag = 0
+    #                for keyword in vulnerability.keywords:
+    #                    if re.search(keyword, line, flag):
+    #                        vulnInfos[i]["keywords"].add(keyword)
+    #                for optionalKeyword in vulnerability.optionalKeywords:
+    #                    if re.search(optionalKeyword, line, flag):
+    #                        vulnInfos[i]["optionalKeywords"].add(optionalKeyword)
+    #        
+    #        # Determine which vulns to use based off NMAP scan
+    #        # If we match a keyterm or find minOptionalKeyTermsThatMustMatch optional key terms
+    #        for (i, vulnInfo) in enumerate(vulnInfos):
+    #            if len(vulnInfo["keywords"]) > 0 or len(vulnInfo["optionalKeywords"]) > vulnerabilities[i].minOptionalKeyTermsThatMustMatch:
+    #                print("X" * 34, vulnerabilities[i].description, "EXPLOIT FOUND", "*" * 34)
+    #                vulnerabilitiesToUse.add(vulnerabilities[i])
+    #    else:
+    #        # here we don't run nmap and just assume that all vulnerabilities work
+    #        print("SKIPPING NMAP PHASE, RUNNING ALL EXPLOITS WORK")
+    #        vulnerabilitiesToUse = vulnerabilities
+    #    
+    #    ######## DELIVERY, EXPLOITATION, INSTALLATION PHASE ########
+    #    savedOutputInfo = runExploits(vulnerabilitiesToUse)
+    #
+    #    ####### Print some info on the sessions created
+    #    print("@" * 34, "ALL EXPLOITS FINISHED", "@" * 34)
+    #    sessions = client.sessions.list
+    #    numSessions = 0
+    #    for k in client.sessions.list.keys():
+    #        numSessions += 1
+    #    print("Number of sessions created:", numSessions)
+    #
+    #    print("Testing sessions (two lines should appear below, the result of the 'whoami' and 'pwd' commands):")
+    #    for k in client.sessions.list.keys():
+    #        shell = client.sessions.session(str(k))
+    #        shell.write('whoami')
+    #        shell.write('pwd')
+    #        print(shell.read())
+    #
+    #    # print out saved info from running exploits
+    #    print("$" * 34, "SAVED OUTPUT INFO", "$" * 34)
+    #    for v in savedOutputInfo.keys():
+    #        print("SAVED OUTPUT FOR EXPLOIT", v, "(" + vulnerabilities[v].description + "):")
+    #        for line in savedOutputInfo[v]:
+    #            print(line)
+    #   
