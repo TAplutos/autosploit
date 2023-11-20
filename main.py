@@ -146,10 +146,13 @@ def start_metasploit(): # Starts metasploit and kills all previous sessions
 
 
 def toggle_test_mode():
+    global TEST_MODE
     if test_mode_var.get() == 1:
+        TEST_MODE = True
         print("Test Mode is ON")
         # Additional actions when Test Mode is enabled
     else:
+        TEST_MODE = False
         print("Test Mode is OFF")
         # Additional actions when Test Mode is disabled
 
