@@ -21,7 +21,7 @@ from tkinter import messagebox, simpledialog, ttk
 initial_setup_done = False # For button disable
 server_setup_done = False # For button disable
 TEST_MODE = False # For test mode to be called
-RHOSTS = ["RHOSTS"] # Holds our target IP addresses
+RHOSTS = ["Select RHOST"] # Holds our target IP addresses
 client = None # Holds our metasploit client
 
 
@@ -451,7 +451,7 @@ add_ip_button.pack()
 
 # RHost dropdown menu
 rhosts_combobox = ttk.Combobox(root)
-rhosts_combobox['values'] = ["Select RHOST", "Example 1", "Example 2"]  # Placeholder values
+rhosts_combobox['values'] = ["Select RHOST"]  # Placeholder values
 rhosts_combobox.current(0)  # Set the combobox to show the first item
 rhosts_combobox.pack()
 
