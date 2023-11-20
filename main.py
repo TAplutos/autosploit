@@ -103,13 +103,16 @@ def retrieve_input(): # Gets nmap aggressiveness from GUI
 
 def initiate_nmap_scan(): # Runs the Nmap scan
     # Assuming aggressiveness is obtained from the GUI
-    aggressiveness = int(entry.get())
-    if 0 <= aggressiveness <= 5:
-        # Call your Nmap scan function here with aggressiveness
-        nmap_dest.run_scan(aggressiveness)  # Replace with actual function call
-        print(f"Running Nmap scan with aggressiveness {aggressiveness}")
+    input_value = entry.get()
+    if input_value.isdigit():  # Check if the input is a digit
+        aggressiveness = int(input_value)
+        if 0 <= aggressiveness <= 5:
+            nmap_dest.run_scan(aggressiveness)
+            print(f"Running Nmap scan with aggressiveness {aggressiveness}")
+        else:
+            tk.messagebox.showwarning("Warning", "Please enter a valid number between 0 and 5.")
     else:
-        tk.messagebox.showwarning("Warning", "Please enter a valid number between 0 and 5.")
+        tk.messagebox.showwarning("Warning", "Please enter a valid integer for Nmap scan aggressiveness.")
 
 
 def update_rhosts_combobox(new_items): # Updates the RHOSTS combobox with new items
@@ -278,7 +281,7 @@ def utils_command(): # Runs a command in the utils.py file
         time.sleep(10)
 
 
-def test_mode():
+def test_mode(): # Runs the test mode
     global TEST_MODE
     if TEST_MODE:
         # Create a popup window for test mode
