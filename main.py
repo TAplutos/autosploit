@@ -460,16 +460,16 @@ rhosts_combobox.pack()
 rhosts_combobox.bind("<<ComboboxSelected>>", on_rhosts_select)
 
 # Button to run exploits function
-server_button = tk.Button(root, text="Run runExploits", command=runExploits)
-server_button.pack()
+exploits_button = tk.Button(root, text="Run runExploits", command=runExploits)
+exploits_button.pack()
 
 # Button to run utils function
-server_button = tk.Button(root, text="Run utils_command", command=utils_command)
-server_button.pack()
+utils_button = tk.Button(root, text="Run utils_command", command=utils_command)
+utils_button.pack()
 
 # Button to run big boi function
-server_button = tk.Button(root, text="Run full_exploitation_cycle", command=full_exploitation_cycle)
-server_button.pack()
+full_exploit_button = tk.Button(root, text="Run full_exploitation_cycle", command=full_exploitation_cycle)
+full_exploit_button.pack()
 
 # Run the application (Remember everything that is used needs to be defined above this)
 root.mainloop()
