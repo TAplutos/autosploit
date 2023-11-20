@@ -23,7 +23,6 @@ server_setup_done = False # For button disable
 TEST_MODE = False # For test mode to be called
 RHOSTS = ["RHOSTS"] # Holds our target IP addresses
 client = None # Holds our metasploit client
-test_mode_var = tk.IntVar() # Create a variable to store the state of the test mode checkbox
 
 
 ###################################### OG Variables ######################################
@@ -414,6 +413,7 @@ server_button = tk.Button(root, text="Run Server Setup", command=run_server_scri
 server_button.pack()
 
 # Checkbox for test mode
+test_mode_var = tk.IntVar() # Create a variable to store the state of the test mode checkbox
 test_mode_checkbox = tk.Checkbutton(root, text="Enable Test Mode", variable=test_mode_var, command=toggle_test_mode)
 test_mode_checkbox.pack()
 
