@@ -10,7 +10,7 @@ def _scanNetwork(pattern):
         if ip:
             ips.append(ip[0][5:])
     return ips
-
+ 
 def scanNetworkForIPs():
     return _scanNetwork("inet [0-9]+\.[0-9]+\.[0-9]+\.[0-9]+")
 
