@@ -2,5 +2,5 @@
 export PATH=$PATH:/snap/bin
 echo "SETTING UP SERVER"
 yes | msfrpcd -P PASSWORD &
-sleep 20
+sleep 38
 echo "FINISHED SETTING UP SERVER"

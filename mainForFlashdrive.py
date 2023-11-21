@@ -150,7 +150,7 @@ if __name__ == "__main__":
     # this needs to be run janky like this cuz the command sometimes just hangs 
     # and doesnt run to completion but its ok cuz it runs the shit we need it to run
     proc1 = subprocess.Popen(["./setup.sh"])
-    time.sleep(180)
+    time.sleep(40)
     proc1.kill()
 
     # basically starts metasploit and kill all previous sessions 
