@@ -360,10 +360,8 @@ def colorNmapOutput(nmapOutput):
     return coloredNmapOutput
 
 
-# TODO: make error messages pop up when trying to run this if run without
+# TODO: @Chris make error messages pop up when trying to run this if run without
 # RHOSTS having any IP's 
-# TODO: @chris make a separate window or figure out somewhere for 
-# coloredNmapOutput to be displayed for the user
 def full_exploitation_cycle():
         global NMAP_AGGRESSIVENESS, RHOSTS, RUN_NMAP, client
         
@@ -415,7 +413,8 @@ def full_exploitation_cycle():
             
             # replace keywords in nmap scan with colored keywords
             coloredNmapOutput = colorNmapOutput(nmapOutput)
-            # TODO: @CHRIS get this output into a window please
+            # TODO: @chris make a separate window or figure out somewhere for 
+            # coloredNmapOutput to be displayed in for the user to see
             for line in coloredNmapOutput:
                 print(line)
             
