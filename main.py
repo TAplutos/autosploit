@@ -9,8 +9,10 @@ sys.path.append(os.getcwd() + "/lib/")
 from lib.msfrpc4 import *
 import nmap_dest
 import re
+import copy
 import subprocess
 import utils
+from colorama import Fore
 import scanNetwork
 from knownVulnerabilities import vulnerabilities
 import tkinter as tk
@@ -43,10 +45,11 @@ startTime = time.time()
 
 ###################################### GUI Functions ######################################
 
+# TODO: @TREVOR make this so that subprocess is killed after a certain amount of time 
 def run_setup_script(): # The intial setup script that runs the initial_setup.sh file
     global initial_setup_done, setup_button
     if not initial_setup_done:
-        subprocess.Popen(["./initial_setup.sh"], shell=True)
+        proc1 = subprocess.Popen(["./initial_setup.sh"], shell=True)
         initial_setup_done = True
         setup_button.config(state="disabled")
         
@@ -74,7 +77,7 @@ def run_server_script(): # Sets up msfconsole RPC server
        # Create a top-level pop-up window
         popup = tk.Toplevel(root)
         popup.title("Server Setup in Progress")
-        message = tk.Label(popup, text="Server setup started, please wait 20 seconds. \nThis window will close automatically once it's done! \n\nNote: You only need to run this if you restarted your computer since the last time you ran this setup.")
+        message = tk.Label(popup, text="Server setup started, please wait 40 seconds. \nThis window will close automatically once it's done! \n\nNote: You only need to run this if you restarted your computer since the last time you ran this setup.")
         message.pack()
 
         # Function to close the popup
@@ -83,7 +86,7 @@ def run_server_script(): # Sets up msfconsole RPC server
             tk.messagebox.showinfo("Server Setup Script", "Server setup completed, Go have fun.")
 
         # Schedule the popup to close after 10 seconds
-        popup.after(20000, close_popup)
+        popup.after(40000, close_popup)
 
 
 def retrieve_input(): # Gets nmap aggressiveness from GUI
@@ -339,7 +342,28 @@ def test_mode(): # Runs the test mode
     else:
         messagebox.showinfo("Test Mode", "TEST_MODE is False, please set it to True to run exploits")
 
+# color keywords in the nmap output
+def colorNmapOutput(nmapOutput):
+    print("COLORING NMAP")
+    allKeywords = []
+    for vulnerability in vulnerabilities:
+        kws = vulnerability.keywords + vulnerability.optionalKeywords
+        allKeywords.append([kws, vulnerability.color])
+    nmapOutputCopy = copy.deepcopy(nmapOutput)
+    coloredNmapOutput = []
+    for line in nmapOutputCopy:
+        coloredLine = line
+        for [wordSet, color] in allKeywords:
+            for word in wordSet:
+                coloredLine = coloredLine.replace(word, color + word + Fore.RESET)
+        coloredNmapOutput.append(coloredLine)
+    return coloredNmapOutput
 
+
+# TODO: make error messages pop up when trying to run this if run without
+# RHOSTS having any IP's 
+# TODO: @chris make a separate window or figure out somewhere for 
+# coloredNmapOutput to be displayed for the user
 def full_exploitation_cycle():
         global NMAP_AGGRESSIVENESS, RHOSTS, RUN_NMAP, client
         
@@ -347,10 +371,11 @@ def full_exploitation_cycle():
         for RHOST in RHOSTS:
             print("X" * 34, "BEGINNING OF OUTPUT FOR", RHOST,"X" * 34)
             # Decides if we want to run nmap or just assumes all outputs work
+            nmapOutput = nmap_dest._nmap_sample_ouput
             if RUN_NMAP: # TODO: make option so instead of not running nmap, take file input as hypothetical output of NMAP
                 ######## RECONAISSANCE PHASE ########
                 nmapOutput = nmap_dest.nmap_xml_output(RHOST, nmapArgs)
-                print(nmapOutput)
+                # print(nmapOutput)
                 if (nmapOutput[1][0:22] == "Note: Host seems down."):
                     print("Host seems down. Exiting.")
                     exit()
@@ -376,7 +401,7 @@ def full_exploitation_cycle():
                         for optionalKeyword in vulnerability.optionalKeywords:
                             if re.search(optionalKeyword, line, flag):
                                 vulnInfos[i]["optionalKeywords"].add(optionalKeyword)
-                
+
                 # Determine which vulns to use based off NMAP scan
                 # If we match a keyterm or find minOptionalKeyTermsThatMustMatch optional key terms
                 for (i, vulnInfo) in enumerate(vulnInfos):
@@ -387,6 +412,12 @@ def full_exploitation_cycle():
                 # here we don't run nmap and just assume that all vulnerabilities work
                 print("SKIPPING NMAP PHASE, RUNNING ALL EXPLOITS WORK")
                 vulnerabilitiesToUse = vulnerabilities
+            
+            # replace keywords in nmap scan with colored keywords
+            coloredNmapOutput = colorNmapOutput(nmapOutput)
+            # TODO: @CHRIS get this output into a window please
+            for line in coloredNmapOutput:
+                print(line)
             
             ######## DELIVERY, EXPLOITATION, INSTALLATION PHASE ########
             savedOutputInfo = runExploits(vulnerabilitiesToUse)

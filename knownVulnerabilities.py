@@ -1,7 +1,8 @@
 # here we store a list of vulnerabilities our software will be able to exploit
 # description of the exploit's keywords must be comma separated
 # module name is the module name used in metasploit
-# TODO: CHANGE THIS TO HAVE A DICTIONARY FOR EVERYTHING
+from colorama import Fore
+
 class Vulnerability():
     def __init__(self, classDict):
         # If any of these terms match, the exploit is run
@@ -26,6 +27,8 @@ class Vulnerability():
         # will this exploit get us a list of usernames to use
         if "addUserNames" in classDict: self.addUserNames = classDict["addUserNames"]
         else: self.addUserNames = False
+        if "color" in classDict: self.color = classDict["color"]
+        else: self.color = Fore.WHITE
 
         # run options for the module
         if "options" in classDict:
@@ -38,6 +41,8 @@ class Vulnerability():
 
         self.session = None # TODO: create a method to set and get this
 
+# leave this here
+# FF1493
 
 # TO ADD A NEW VULNERABILITY
 # 1) add its keywords, min number of key terms to be matched, moduleName, a short description here, and a payload if the exploit has one
@@ -57,7 +62,8 @@ _ircdDict = {
     "exploitType": "exploit",
     "payload": "cmd/unix/bind_ruby",
     "outputPatternMatch": "shell session [0-9]* opened.*",
-    "maxRuntime": 20
+    "maxRuntime": 20,
+    "color": Fore.BLACK
     } 
 _ircd = Vulnerability(_ircdDict)
 
@@ -71,7 +77,8 @@ _distccDict = {
     "exploitType": "exploit",
     "payload": "cmd/unix/bind_ruby",
     "outputPatternMatch": "shell session [0-9]* opened.*",
-    "maxRuntime": 20
+    "maxRuntime": 20,
+    "color": Fore.BLUE
     } 
 _distcc = Vulnerability(_distccDict)
 
@@ -85,7 +92,8 @@ _vsftpdDict = {
     "exploitType": "exploit",
     "payload": "cmd/unix/interact",
     "outputPatternMatch": "shell session [0-9]* opened.*",
-    "maxRuntime": 20
+    "maxRuntime": 20,
+    "color": Fore.CYAN
     } 
 _vsftpd = Vulnerability(_vsftpdDict)
 
@@ -101,7 +109,8 @@ _smtpScannerDict = {
     "payload": None,
     "outputPatternMatch": "Users found:.*",
     "canCheck": False,
-    "maxRuntime": 1500
+    "maxRuntime": 1500,
+    "color": Fore.GREEN
     } 
 _smtpScanner= Vulnerability(_smtpScannerDict)
 
@@ -117,6 +126,7 @@ _mysqlBruteForceDict = {
     "outputPatternMatch": "MYSQL - Success: .*", # TODO: check this
     "addUserNames": True,
     "maxRuntime": 10000,
+    "color": Fore.MAGENTA,
     # "options": [("ANONYMOUS_LOGIN", True),
     #             ("BLANK_PASSWORDS", True)]
                 # ,
@@ -140,6 +150,7 @@ _tomcatDict = {
     "outputPatternMatch": "Meterpreter session [0-9]* opened.*",  # TODO: check this
     "addUserNames": True,
     "maxRuntime": 10000,
+    "color": Fore.RED,
     "options": [("HttpPassword", "tomcat"),
                 ("HttpUsername", "tomcat"),
                 ("RPORT", "8180")]
@@ -157,7 +168,8 @@ _sambaDict = {
     "payload": None,
     "outputPatternMatch": "shell session [0-9]* opened.*",  # TODO: check this
     "addUserNames": True,
-    "maxRuntime": 20
+    "maxRuntime": 20,
+    "color": Fore.YELLOW
     }
 _sambaDict = Vulnerability(_sambaDict)
 
@@ -173,7 +185,8 @@ _apacheDict = {
     "outputPatternMatch": "Meterpreter session [0-9]* opened.*",
     "addUserNames": True,
     "maxRuntime": 10000,
-    "options": [("PAYLOAD", "php/meterpreter/reverse_tcp")]
+    "options": [("PAYLOAD", "php/meterpreter/reverse_tcp")],
+    "color": Fore.LIGHTRED_EX
     }
 _apacheDict = Vulnerability(_apacheDict)
 
@@ -188,7 +201,8 @@ _postgresDict = {
     "payload": None,
     "outputPatternMatch": "Meterpreter session [0-9]* opened.*",
     "addUserNames": True,
-    "maxRuntime": 20
+    "maxRuntime": 20,
+    "color": Fore.LIGHTGREEN_EX
     }
 _postgresDict = Vulnerability(_postgresDict)
 
