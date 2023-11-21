@@ -417,17 +417,21 @@ def full_exploitation_cycle():
 
 # Create the GUI
 root = tk.Tk()
-root.title("Bootcon Pentesting Tool GUI v0.1")
+root.title("Bootcon Pentesting Tool GUI v0.2")
+
+root.configure(bg='black')  # Set the background color of the window to black
+
+
 
 ########## The Widgets ##########
 
 # Button to run initial setup script
-setup_button = tk.Button(root, text="Run Initial Setup", command=run_setup_script)
-setup_button.pack()
+setup_button = tk.Button(root, text="Run Initial Setup", command=run_setup_script, bg='black', fg='gold', activebackground='gold', activeforeground='black', highlightthickness=2, highlightbackground='gold', highlightcolor='gold', bd=0)
+setup_button.pack(pady=10)
 
 # Button to run server script
-server_button = tk.Button(root, text="Run Server Setup", command=run_server_script)
-server_button.pack()
+server_button = tk.Button(root, text="Run Server Setup", command=run_server_script, bg='black', fg='gold', activebackground='gold', activeforeground='black', highlightthickness=2, highlightbackground='gold', highlightcolor='gold', bd=0)
+server_button.pack(pady=10)
 
 # Checkbox for test mode
 test_mode_var = tk.IntVar() # Create a variable to store the state of the test mode checkbox
@@ -435,36 +439,36 @@ test_mode_checkbox = tk.Checkbutton(root, text="Enable Test Mode", variable=test
 test_mode_checkbox.pack()
 
 # Button for test mode
-test_mode_button = tk.Button(root, text="Test Mode", command=test_mode)
-test_mode_button.pack()
+test_mode_button = tk.Button(root, text="Test Mode", command=test_mode, bg='black', fg='gold', activebackground='gold', activeforeground='black', highlightthickness=2, highlightbackground='gold', highlightcolor='gold', bd=0)
+test_mode_button.pack(pady=10)
 
 # Input for aggressiveness of Nmap scan
-label = tk.Label(root, text="Enter the aggressiveness of the nmap scan (0-5):")
-label.pack()
+label = tk.Label(root, text="Enter the aggressiveness of the nmap scan (0-5):", bg='black', fg='gold', activebackground='gold', activeforeground='black', highlightthickness=2, highlightbackground='gold', highlightcolor='gold', bd=0)
+label.pack(pady=10)
 
 entry = tk.Entry(root)
 entry.pack()
 
-button = tk.Button(root, text="Submit", command=retrieve_input)
-button.pack()
+button = tk.Button(root, text="Submit", command=retrieve_input, bg='black', fg='gold', activebackground='gold', activeforeground='black', highlightthickness=2, highlightbackground='gold', highlightcolor='gold', bd=0)
+button.pack(pady=10)
 
 # Button to start metasploit
-metasploit_button = tk.Button(root, text="Start Metasploit", command=start_metasploit)
-metasploit_button.pack()
+metasploit_button = tk.Button(root, text="Start Metasploit", command=start_metasploit, bg='black', fg='gold', activebackground='gold', activeforeground='black', highlightthickness=2, highlightbackground='gold', highlightcolor='gold', bd=0)
+metasploit_button.pack(pady=10)
 
 # Start Nmap scan button
-nmap_button = tk.Button(root, text="Submit Nmap Scan", command=initiate_nmap_scan)
-nmap_button.pack()
+nmap_button = tk.Button(root, text="Submit Nmap Scan", command=initiate_nmap_scan, bg='black', fg='gold', activebackground='gold', activeforeground='black', highlightthickness=2, highlightbackground='gold', highlightcolor='gold', bd=0)
+nmap_button.pack(pady=10)
 
 # New IP Entry Field
-new_ip_label = tk.Label(root, text="Enter new RHOST IP:")
-new_ip_label.pack()
+new_ip_label = tk.Label(root, text="Enter new RHOST IP:", bg='black', fg='gold', activebackground='gold', activeforeground='black', highlightthickness=2, highlightbackground='gold', highlightcolor='gold', bd=0)
+new_ip_label.pack(pady=10)
 new_ip_entry = tk.Entry(root)
 new_ip_entry.pack()
 
 # Button to Add New IP to RHOSTS
-add_ip_button = tk.Button(root, text="Add IP to RHOSTS", command=add_to_rhosts)
-add_ip_button.pack()
+add_ip_button = tk.Button(root, text="Add IP to RHOSTS", command=add_to_rhosts, bg='black', fg='gold', activebackground='gold', activeforeground='black', highlightthickness=2, highlightbackground='gold', highlightcolor='gold', bd=0)
+add_ip_button.pack(pady=10)
 
 # RHost dropdown menu
 rhosts_combobox = ttk.Combobox(root)
@@ -475,16 +479,16 @@ rhosts_combobox.pack()
 rhosts_combobox.bind("<<ComboboxSelected>>", on_rhosts_select)
 
 # Button to run exploits function
-exploits_button = tk.Button(root, text="Run runExploits", command=runExploits)
-exploits_button.pack()
+exploits_button = tk.Button(root, text="Run runExploits", command=runExploits, bg='black', fg='gold', activebackground='gold', activeforeground='black', highlightthickness=2, highlightbackground='gold', highlightcolor='gold', bd=0)
+exploits_button.pack(pady=10)
 
 # Button to run utils function
-utils_button = tk.Button(root, text="Run utils_command", command=utils_command)
-utils_button.pack()
+utils_button = tk.Button(root, text="Run utils_command", command=utils_command, bg='black', fg='gold', activebackground='gold', activeforeground='black', highlightthickness=2, highlightbackground='gold', highlightcolor='gold', bd=0)
+utils_button.pack(pady=10)
 
 # Button to run big boi function
-full_exploit_button = tk.Button(root, text="Run full_exploitation_cycle", command=full_exploitation_cycle)
-full_exploit_button.pack()
+full_exploit_button = tk.Button(root, text="Run full_exploitation_cycle", command=full_exploitation_cycle, bg='black', fg='gold', activebackground='gold', activeforeground='black', highlightthickness=2, highlightbackground='gold', highlightcolor='gold', bd=0)
+full_exploit_button.pack(pady=10)
 
 # Run the application (Remember everything that is used needs to be defined above this)
 root.mainloop()
