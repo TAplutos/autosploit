@@ -426,7 +426,7 @@ root.configure(bg='#001633')  # Set the background color of the window to black
 ########## The Widgets ##########
 
 # Button to run initial setup script
-setup_button = tk.Button(root, text="Run Initial Setup", command=run_setup_script, bg='#001633', fg='#ffab40', activebackground='gold', activeforeground='#001633', highlightthickness=2, highlightbackground='gold', highlightcolor='gold', bd=0)
+setup_button = tk.Button(root, text="Run Initial Setup", command=run_setup_script, bg='#001633', fg='#ffab40', activebackground='purple', activeforeground='#001633', highlightthickness=2, highlightbackground='red', highlightcolor='green', bd=0)
 setup_button.pack(pady=5)
 
 # Button to run server script
