@@ -180,11 +180,12 @@ def add_to_rhosts():
         rhosts_combobox.current(len(RHOSTS) - 1)  # Select the newly added IP
         on_rhosts_select(None)  # Trigger the selection event manually
 
-# Function to display colored Nmap output in a new window
+# Function to display Nmap output in a new window
+# TODO: Fight with it to actually show the colored output
 def display_colored_nmap_output(colored_output):
     # Create a new Toplevel window
     popup = tk.Toplevel(root)
-    popup.title("Colored Nmap Output")
+    popup.title("Nmap Output")
 
     # Create a Text widget for displaying the output
     text_widget = tk.Text(popup, wrap='word', bg='black', fg='white')
@@ -470,7 +471,18 @@ def full_exploitation_cycle():
         display_colored_nmap_output(coloredNmapOutput) # Display colored Nmap output in a new window
         
         ######## DELIVERY, EXPLOITATION, INSTALLATION PHASE ########
-        savedOutputInfo = runExploits(vulnerabilitiesToUse)
+        # Open the error log file
+        with open('error_log.txt', 'a') as f:
+            # Redirect standard error to the file
+            sys.stderr = f
+            
+            # Capture errors from runExploits
+            try:
+                savedOutputInfo = runExploits(vulnerabilitiesToUse)
+            except Exception as e:
+                # This will write to your log file instead of the console
+                print(f"An error occurred: {e}", file=sys.stderr)
+
 
     ####### Print some info on the sessions created
     print("@" * 34, "ALL EXPLOITS FINISHED", "@" * 34)
