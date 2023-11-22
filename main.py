@@ -518,6 +518,10 @@ root.title("Bootcon Pentesting Tool GUI v0.2")
 setup_button = tk.Button(root, text="Run Initial Setup", command=run_setup_script)
 setup_button.pack()
 
+# Button to run utils function for metasploit framework
+utils_button = tk.Button(root, text="Install metasploit-framework", command=install_metasploit_framework)
+utils_button.pack()
+
 # Button to run server script
 server_button = tk.Button(root, text="Run Server Setup", command=run_server_script)
 server_button.pack()
@@ -566,14 +570,6 @@ rhosts_combobox.current(0)  # Set the combobox to show the first item
 rhosts_combobox.pack()
 
 rhosts_combobox.bind("<<ComboboxSelected>>", on_rhosts_select)
-
-# Button to run exploits function
-exploits_button = tk.Button(root, text="Run runExploits", command=runExploits)
-exploits_button.pack()
-
-# Button to run utils function
-utils_button = tk.Button(root, text="Install metasploit-framework", command=install_metasploit_framework)
-utils_button.pack()
 
 # Button to run big boi function
 full_exploit_button = tk.Button(root, text="Run full_exploitation_cycle", command=full_exploitation_cycle)
