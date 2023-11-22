@@ -100,11 +100,11 @@ def retrieve_aggressiveness_input(): # Gets nmap aggressiveness from GUI
     try:
         # Convert to integer and validate range
         aggressiveness = int(input_value)
-        if 0 <= aggressiveness <= 5:
+        if 0 <= aggressiveness <= 3:
             # Call your Nmap scan function here with aggressiveness
             print(f"Running Nmap scan with aggressiveness {aggressiveness}")
         else:
-            print("Please enter a valid number between 0 and 5. Higher number = slower, more comprehensive, more detectable.")
+            print("Please enter a valid number between 0 and 3. Higher number = slower, more comprehensive, more detectable.")
     except ValueError:
         print("Please enter a valid integer.")
 
@@ -114,11 +114,11 @@ def initiate_nmap_scan(): # Runs the Nmap scan
     input_value = entry.get()
     if input_value.isdigit():  # Check if the input is a digit
         aggressiveness = int(input_value)
-        if 0 <= aggressiveness <= 5:
+        if 0 <= aggressiveness <= 3:
             nmap_dest.run_scan(aggressiveness)
             print(f"Running Nmap scan with aggressiveness {aggressiveness}")
         else:
-            tk.messagebox.showwarning("Warning", "Please enter a valid number between 0 and 5.")
+            tk.messagebox.showwarning("Warning", "Please enter a valid number between 0 and 3.")
     else:
         tk.messagebox.showwarning("Warning", "Please enter a valid integer for Nmap scan aggressiveness.")
 
@@ -340,6 +340,7 @@ def test_mode(): # Runs the test mode
         vulnerability_number_label = tk.Label(test_popup, text="Or enter a Vulnerability number:")
         vulnerability_number_label.pack(pady=(10, 0))
 
+
         vulnerability_number_entry = tk.Entry(test_popup)
         vulnerability_number_entry.pack(pady=5)
 
@@ -394,7 +395,7 @@ def is_valid_ip(ip):
     return re.match(pattern, ip) is not None
 
 # TODO: @ chris make error messages pop up when trying to run this if run without
-# RHOSTS having any IP's 
+# RHOSTS having any IP's
 def full_exploitation_cycle():
     global NMAP_AGGRESSIVENESS, RHOSTS, RUN_NMAP, client
     
