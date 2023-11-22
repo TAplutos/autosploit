@@ -518,7 +518,7 @@ test_mode_button = tk.Button(root, text="Test Mode", command=test_mode)
 test_mode_button.pack()
 
 # Input for aggressiveness of Nmap scan
-label = tk.Label(root, text="Enter the aggressiveness of the nmap scan (0-5):")
+label = tk.Label(root, text="Enter the aggressiveness of the nmap scan (least aggressive 0 - 3 most aggressive):")
 label.pack()
 
 entry = tk.Entry(root)
