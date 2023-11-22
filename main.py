@@ -394,10 +394,16 @@ def full_exploitation_cycle():
         
         nmapArgs = NMAP_POSSIBLE_ARGS[NMAP_AGGRESSIVENESS]
 
-        # Check if RHOSTS is empty or contains invalid IP addresses
-        if not RHOSTS or any(not is_valid_ip(ip) for ip in RHOSTS):
-            messagebox.showerror("Error", "RHOSTS must contain valid IP addresses. Please check your inputs.")
-            return  # Exit the function as RHOSTS is invalid
+        # Check if the client is initialized
+        if client is None:
+            messagebox.showerror("Error", "Metasploit client is not initialized. Please start Metasploit first.")
+            return
+
+        # Filter out invalid IP addresses from RHOSTS
+        RHOSTS = [ip for ip in RHOSTS if is_valid_ip(ip)]
+        if not RHOSTS:
+            messagebox.showerror("Error", "No valid IP addresses found in RHOSTS.")
+            return
 
 
         for RHOST in RHOSTS:
