@@ -8,7 +8,7 @@ OUTPUT_FILE="flashdrive.tar.gz"
 curl -LJO $URL -o $OUTPUT_FILE
 
 # Create autosploitFlashdrive directory
-mkdir autosploitFlashdrive
+mkdir autosploitFlashdrive 
 
 # Navigate into autosploitFlashdrive directory
 cd autosploitFlashdrive
