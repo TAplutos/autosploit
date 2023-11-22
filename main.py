@@ -352,7 +352,7 @@ def test_mode(): # Runs the test mode
             # Find the selected vulnerability object
             selected_vuln = next((vuln for vuln in vulnerabilities if vuln.description == vulnerability_dropdown.get()), None)
             if selected_vuln:
-                name_label.config(text=f"Name: {selected_vuln.moduleName}")
+                name_label.config(text=f"Name: {selected_vuln.module}")
                 type_label.config(text=f"Type: {selected_vuln.exploitType}")
                 desc_label.config(text=f"Description: {selected_vuln.description}")
 
