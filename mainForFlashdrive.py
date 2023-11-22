@@ -19,7 +19,7 @@ RUN_NMAP = False # set this to false when you want to test on metasploit machine
 NMAP_AGGRESSIVENESS = 2
 # in order of increasing levels of fucking around (and also in increasing levels of finding out)
 NMAP_POSSIBLE_ARGS = ["", "-A -T4", "-p- -sV -O", "-p- -sV -O -A -T5 -sC -Pn"]
-EXPLOIT_NUM = 4 # for testing
+EXPLOIT_NUM = 3 # for testing
 TEST_MODE = True
 EXPLOIT_NUM = min(EXPLOIT_NUM, len(vulnerabilities) - 1)
 RHOSTS = ["192.168.130.128"] # PUT YOUR HOST HERE or feed it in through command line argument
@@ -53,6 +53,8 @@ def runExploits(vulnerabilitiesToUse = set([vulnerabilities[EXPLOIT_NUM]])):
             continue
         module = vulnerability.module
         exploit = client.modules.use(vulnerability.exploitType, module)
+        print(exploit.info)
+        exit()
         # options = exploit.options
         exploit.missing_required
         if 'RHOSTS' in exploit.missing_required:
@@ -149,9 +151,9 @@ if __name__ == "__main__":
 
     # this needs to be run janky like this cuz the command sometimes just hangs 
     # and doesnt run to completion but its ok cuz it runs the shit we need it to run
-    proc1 = subprocess.Popen(["./setup.sh"])
-    time.sleep(40)
-    proc1.kill()
+    # proc1 = subprocess.Popen(["./setup.sh"])
+    # time.sleep(40)
+    # proc1.kill()
 
     # basically starts metasploit and kill all previous sessions 
     client = MsfRpcClient('PASSWORD', port=55553, ssl=True)
