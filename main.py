@@ -537,13 +537,13 @@ test_mode_button.grid(row=4, column=1, padx=5)
 
 # Input for aggressiveness of Nmap scan
 label = tk.Label(main_frame, text="Enter the aggressiveness of the nmap scan (least aggressive 0 - 3 most aggressive):")
-label.grid(row=2, column=0, columnspan=2)
+label.grid(row=2, column=0, columnspan=4)
 
 entry = tk.Entry(main_frame)
-entry.grid(row=2, column=2)
+entry.grid(row=3, column=0, columnspan=2)
 
 button = tk.Button(main_frame, text="Submit", command=retrieve_aggressiveness_input)
-button.grid(row=2, column=3, padx=5)
+button.grid(row=4, column=0, padx=5)
 
 # Button to start metasploit
 metasploit_button = tk.Button(main_frame, text="Start Metasploit", command=start_metasploit_clean)
@@ -551,7 +551,7 @@ metasploit_button.grid(row=1, column=1, padx=5)
 
 # Start Nmap scan button
 nmap_button = tk.Button(main_frame, text="Submit Nmap Scan", command=initiate_nmap_scan)
-nmap_button.grid(row=2, column=4, padx=5)
+nmap_button.grid(row=4, column=1, padx=5)
 
 # New IP Entry Field
 new_ip_label = tk.Label(main_frame, text="Enter new RHOST IP:")
