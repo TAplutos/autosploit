@@ -178,41 +178,19 @@ def add_to_rhosts():
         rhosts_combobox.current(len(RHOSTS) - 1)  # Select the newly added IP
         on_rhosts_select(None)  # Trigger the selection event manually
 
-
-# Function to insert colored text into a Tkinter Text widget
-def insert_colored_text(text_widget, text, color):
-    text_widget.tag_configure(color, foreground=color)
-    text_widget.insert('end', text, color)
-
-
-# Function to display Nmap output in a new window
+# Function to display colored Nmap output in a new window
 def display_colored_nmap_output(colored_output):
     # Create a new Toplevel window
     popup = tk.Toplevel(root)
     popup.title("Colored Nmap Output")
 
     # Create a Text widget for displaying the output
-    text_widget = tk.Text(popup, wrap='word', bg='black')
+    text_widget = tk.Text(popup, wrap='word', bg='black', fg='white')
     text_widget.pack(expand=True, fill='both')
 
     # Insert colored output into the Text widget
     for line in colored_output:
-        # Extract and apply colors
-        while "<" in line and ">" in line:
-            start = line.find("<")
-            end = line.find(">", start)
-            color = line[start+1:end]
-            if color:  # Check if color is not empty
-                text_widget.tag_configure(color, foreground=color)
-                word_start = end + 1
-                word_end = line.find("</", word_start)
-                word = line[word_start:word_end]
-                text_widget.insert('end', word, color)
-                line = line[word_end+len(color)+3:]  # Skip past the end color tag
-            else:
-                # Handle cases where color extraction fails
-                break
-        text_widget.insert('end', line + "\n")  # Insert any remaining text
+        text_widget.insert('end', line + "\n")
 
     # Disable editing of the Text widget
     text_widget.config(state='disabled')
@@ -398,17 +376,15 @@ def colorNmapOutput(nmapOutput):
     print("COLORING NMAP")
     allKeywords = []
     for vulnerability in vulnerabilities:
-        # Use Tkinter compatible colors or hex codes
-        tk_color = vulnerability.color  # Ensure this is a Tkinter-compatible color
         kws = vulnerability.keywords + vulnerability.optionalKeywords
-        allKeywords.append([kws, tk_color])
+        allKeywords.append([kws, vulnerability.color])
     nmapOutputCopy = copy.deepcopy(nmapOutput)
     coloredNmapOutput = []
     for line in nmapOutputCopy:
         coloredLine = line
         for [wordSet, color] in allKeywords:
             for word in wordSet:
-                coloredLine = coloredLine.replace(word, f"<{color}>{word}</{color}>")
+                coloredLine = coloredLine.replace(word, color + word + Fore.RESET)
         coloredNmapOutput.append(coloredLine)
     return coloredNmapOutput
 
