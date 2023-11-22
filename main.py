@@ -170,6 +170,28 @@ def add_to_rhosts():
         rhosts_combobox.current(len(RHOSTS) - 1)  # Select the newly added IP
         on_rhosts_select(None)  # Trigger the selection event manually
 
+# Function to display colored Nmap output in a new window
+def display_colored_nmap_output(colored_output):
+    # Create a new Toplevel window
+    popup = tk.Toplevel(root)
+    popup.title("Colored Nmap Output")
+
+    # Create a Text widget for displaying the output
+    text_widget = tk.Text(popup, wrap='word', bg='black', fg='white')
+    text_widget.pack(expand=True, fill='both')
+
+    # Insert colored output into the Text widget
+    for line in colored_output:
+        text_widget.insert('end', line + "\n")
+
+    # Disable editing of the Text widget
+    text_widget.config(state='disabled')
+
+    # Add a Scrollbar widget
+    scrollbar = tk.Scrollbar(popup, command=text_widget.yview)
+    scrollbar.pack(side='right', fill='y')
+    text_widget['yscrollcommand'] = scrollbar.set
+
 ###################################### Functions from Main ######################################
 
 # Test your exploits here first cuz they won't work as reliably when all exploits are run at once below
@@ -359,6 +381,11 @@ def colorNmapOutput(nmapOutput):
         coloredNmapOutput.append(coloredLine)
     return coloredNmapOutput
 
+# To check if a string is a valid IP address dor RHOSTS
+def is_valid_ip(ip):
+    """Check if a string is a valid IP address."""
+    pattern = r'^\d{1,3}(\.\d{1,3}){3}$'
+    return re.match(pattern, ip) is not None
 
 # TODO: @Chris make error messages pop up when trying to run this if run without
 # RHOSTS having any IP's 
@@ -366,6 +393,13 @@ def full_exploitation_cycle():
         global NMAP_AGGRESSIVENESS, RHOSTS, RUN_NMAP, client
         
         nmapArgs = NMAP_POSSIBLE_ARGS[NMAP_AGGRESSIVENESS]
+
+        # Check if RHOSTS is empty or contains invalid IP addresses
+        if not RHOSTS or any(not is_valid_ip(ip) for ip in RHOSTS):
+            messagebox.showerror("Error", "RHOSTS must contain valid IP addresses. Please check your inputs.")
+            return  # Exit the function as RHOSTS is invalid
+
+
         for RHOST in RHOSTS:
             print("X" * 34, "BEGINNING OF OUTPUT FOR", RHOST,"X" * 34)
             # Decides if we want to run nmap or just assumes all outputs work
@@ -417,6 +451,8 @@ def full_exploitation_cycle():
             # coloredNmapOutput to be displayed in for the user to see
             for line in coloredNmapOutput:
                 print(line)
+
+            display_colored_nmap_output(coloredNmapOutput) # Display colored Nmap output in a new window
             
             ######## DELIVERY, EXPLOITATION, INSTALLATION PHASE ########
             savedOutputInfo = runExploits(vulnerabilitiesToUse)
