@@ -339,10 +339,25 @@ def test_mode(): # Runs the test mode
         vulnerability_dropdown = ttk.Combobox(test_popup, values=vulnerability_options)
         vulnerability_dropdown.pack(pady=5)
 
-        # Input for manual vulnerability number entry
-        vulnerability_number_label = tk.Label(test_popup, text="Or enter a Vulnerability number:")
-        vulnerability_number_label.pack(pady=(10, 0))
+        # Labels for vulnerability details (initially empty)
+        name_label = tk.Label(test_popup, text="Name: ")
+        name_label.pack(pady=(5, 0))
+        type_label = tk.Label(test_popup, text="Type: ")
+        type_label.pack(pady=(5, 0))
+        desc_label = tk.Label(test_popup, text="Description: ")
+        desc_label.pack(pady=(5, 0))
 
+        # Function to update labels with details of the selected vulnerability
+        def update_vulnerability_details(event):
+            # Find the selected vulnerability object
+            selected_vuln = next((vuln for vuln in vulnerabilities if vuln.description == vulnerability_dropdown.get()), None)
+            if selected_vuln:
+                name_label.config(text=f"Name: {selected_vuln.moduleName}")
+                type_label.config(text=f"Type: {selected_vuln.exploitType}")
+                desc_label.config(text=f"Description: {selected_vuln.description}")
+
+        # Bind the update function to the dropdown selection event
+        vulnerability_dropdown.bind("<<ComboboxSelected>>", update_vulnerability_details)
 
         vulnerability_number_entry = tk.Entry(test_popup)
         vulnerability_number_entry.pack(pady=5)
