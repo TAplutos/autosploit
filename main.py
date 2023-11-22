@@ -30,7 +30,7 @@ client = None # Holds our metasploit client
 ###################################### OG Variables ######################################
 CHECK_MODE = False # will check for exploits rather than running them when can
 RUN_NMAP = False # set this to false when you want to test on metasploit machine and assume all exploits will run
-NMAP_AGGRESSIVENESS = 2
+NMAP_AGGRESSIVENESS = 2 # aggressiveness of nmap scan
 # in order of increasing levels of fucking around (and also in increasing levels of finding out)
 NMAP_POSSIBLE_ARGS = ["", "-A -T4", "-p- -sV -O", "-p- -sV -O -A -T5 -sC -Pn"]
 EXPLOIT_NUM = 4 # for testingsd
@@ -95,14 +95,15 @@ def run_server_script(): # Sets up msfconsole RPC server
 
 
 def retrieve_aggressiveness_input(): # Gets nmap aggressiveness from GUI
+    global NMAP_AGGRESSIVENESS
     # Get the input from the entry widget
     input_value = entry.get()
     try:
         # Convert to integer and validate range
-        aggressiveness = int(input_value)
-        if 0 <= aggressiveness <= 3:
+        NMAP_AGGRESSIVENESS = int(input_value)
+        if 0 <= NMAP_AGGRESSIVENESS <= 3:
             # Call your Nmap scan function here with aggressiveness
-            print(f"Running Nmap scan with aggressiveness {aggressiveness}")
+            print(f"Using aggressiveness {NMAP_AGGRESSIVENESS} for Nmap scan.")
         else:
             print("Please enter a valid number between 0 and 3. Higher number = slower, more comprehensive, more detectable.")
     except ValueError:
@@ -110,13 +111,14 @@ def retrieve_aggressiveness_input(): # Gets nmap aggressiveness from GUI
 
 
 def initiate_nmap_scan(): # Runs the Nmap scan
+    global NMAP_AGGRESSIVENESS
     # Assuming aggressiveness is obtained from the GUI
     input_value = entry.get()
     if input_value.isdigit():  # Check if the input is a digit
-        aggressiveness = int(input_value)
-        if 0 <= aggressiveness <= 3:
-            nmap_dest.run_scan(aggressiveness)
-            print(f"Running Nmap scan with aggressiveness {aggressiveness}")
+        NMAP_AGGRESSIVENESS = int(input_value)
+        if 0 <= NMAP_AGGRESSIVENESS <= 3:
+            nmap_dest.run_scan(NMAP_AGGRESSIVENESS)
+            print(f"Running Nmap scan with aggressiveness {NMAP_AGGRESSIVENESS}")
         else:
             tk.messagebox.showwarning("Warning", "Please enter a valid number between 0 and 3.")
     else:
@@ -351,7 +353,7 @@ def test_mode(): # Runs the test mode
             entered_number = vulnerability_number_entry.get()
             
             if client is None:
-                start_metasploit()  # Initialize the Metasploit client if not already done
+                start_metasploit_clean()  # Initialize the Metasploit client if not already done
             
             if entered_number.isdigit():
                 vulnerability_index = int(entered_number) - 1  # Adjust if your indexing starts from 1
