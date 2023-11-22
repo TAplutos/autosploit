@@ -359,22 +359,16 @@ def test_mode(): # Runs the test mode
         # Bind the update function to the dropdown selection event
         vulnerability_dropdown.bind("<<ComboboxSelected>>", update_vulnerability_details)
 
-        vulnerability_number_entry = tk.Entry(test_popup)
-        vulnerability_number_entry.pack(pady=5)
 
         # Function to run when Submit is clicked
         def on_submit():
             global client
             selected_vulnerability = vulnerability_dropdown.get()
-            entered_number = vulnerability_number_entry.get()
             
             if client is None:
                 start_metasploit_clean()  # Initialize the Metasploit client if not already done
             
-            if entered_number.isdigit():
-                vulnerability_index = int(entered_number) - 1  # Adjust if your indexing starts from 1
-                runExploits([vulnerabilities[vulnerability_index]])
-            elif selected_vulnerability in vulnerability_options:
+            if selected_vulnerability in vulnerability_options:
                 vulnerability_index = vulnerability_options.index(selected_vulnerability)
                 runExploits([vulnerabilities[vulnerability_index]])
             else:
