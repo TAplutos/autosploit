@@ -202,7 +202,7 @@ def display_colored_nmap_output(colored_output):
             start = line.find("<")
             end = line.find(">", start)
             color = line[start+1:end]
-            if color and (color in tk.colorNames or re.match(r'^#[a-fA-F0-9]{6}$', color)):  # Check if color is valid
+            if color:  # Check if color is not empty
                 text_widget.tag_configure(color, foreground=color)
                 word_start = end + 1
                 word_end = line.find("</", word_start)
@@ -210,9 +210,10 @@ def display_colored_nmap_output(colored_output):
                 text_widget.insert('end', word, color)
                 line = line[word_end+len(color)+3:]  # Skip past the end color tag
             else:
-                # Handle cases where color extraction fails or color is invalid
+                # Handle cases where color extraction fails
                 break
         text_widget.insert('end', line + "\n")  # Insert any remaining text
+
     # Disable editing of the Text widget
     text_widget.config(state='disabled')
 
@@ -372,7 +373,7 @@ def test_mode(): # Runs the test mode
             entered_number = vulnerability_number_entry.get()
             
             if client is None:
-                start_metasploit_clean()  # Initialize the Metasploit client if not already done
+                start_metasploit()  # Initialize the Metasploit client if not already done
             
             if entered_number.isdigit():
                 vulnerability_index = int(entered_number) - 1  # Adjust if your indexing starts from 1
@@ -407,7 +408,7 @@ def colorNmapOutput(nmapOutput):
         coloredLine = line
         for [wordSet, color] in allKeywords:
             for word in wordSet:
-                coloredLine = coloredLine.replace(word, f"<{tk_color}>{word}</{tk_color}>")
+                coloredLine = coloredLine.replace(word, f"<{color}>{word}</{color}>")
         coloredNmapOutput.append(coloredLine)
     return coloredNmapOutput
 
