@@ -202,12 +202,16 @@ def display_colored_nmap_output(colored_output):
             start = line.find("<")
             end = line.find(">", start)
             color = line[start+1:end]
-            text_widget.tag_configure(color, foreground=color)
-            word_start = end + 1
-            word_end = line.find("</", word_start)
-            word = line[word_start:word_end]
-            text_widget.insert('end', word, color)
-            line = line[word_end+len(color)+3:]  # Skip past the end color tag
+            if color:  # Check if color is not empty
+                text_widget.tag_configure(color, foreground=color)
+                word_start = end + 1
+                word_end = line.find("</", word_start)
+                word = line[word_start:word_end]
+                text_widget.insert('end', word, color)
+                line = line[word_end+len(color)+3:]  # Skip past the end color tag
+            else:
+                # Handle cases where color extraction fails
+                break
         text_widget.insert('end', line + "\n")  # Insert any remaining text
 
     # Disable editing of the Text widget
