@@ -135,9 +135,6 @@ if __name__ == "__main__":
     # proc1.kill()
     # print("FINISHED INITIAL SETUP")
     # time.sleep(1)
-    
-    # print(utils.runThisCommand("sudo systemctl enable snapd.service"))
-    # print(utils.runThisCommand("sudo systemctl start snapd.service"))
 
     # print("RUNNING SERVER SETUP")
     # proc2 = subprocess.Popen(["./serverSetup.sh"])
@@ -148,6 +145,7 @@ if __name__ == "__main__":
 
     # basically starts metasploit and kill all previous sessions 
     client = MsfRpcClient('PASSWORD', port=55553, ssl=True)
+    
     for k in client.sessions.list.keys():
         client.sessions.session(str(k)).stop()
     print("Sessions list (should be empty):", client.sessions.list)

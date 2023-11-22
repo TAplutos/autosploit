@@ -1,6 +1,4 @@
 # autosploit
-Automating metasploit
+This is for curling and running one script to automatically run autosploit.  
 
-Run ./setup.sh first
-
-To run the main file, just run python3 main.py
+To run this, simply run ./testing.sh

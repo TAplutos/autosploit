@@ -1,6 +1,7 @@
 #!/bin/bash
 export PATH=$PATH:/snap/bin
-apt-get --assume-yes install sudo
+
+# TODO: make this quiet
 sudo apt-get update
 sudo apt-get --assume-yes install apt-utils
 sudo apt-get --assume-yes install systemd
@@ -16,4 +17,6 @@ pip3 install msgpack
 pip3 install retry
 pip3 install requests
 
+sudo systemctl enable snapd.service
+sudo systemctl start snapd.service
 sudo snap install metasploit-framework
