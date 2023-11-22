@@ -531,9 +531,9 @@ setup_button.grid(row=0, column=0, padx=5)
 server_button = tk.Button(left_frame, text="Run Server Setup", command=run_server_script)
 server_button.grid(row=1, column=0, padx=5)
 
-# Button to start metasploit
-metasploit_button = tk.Button(left_frame, text="Start Metasploit", command=start_metasploit_clean)
-metasploit_button.grid(row=2, column=0, padx=5)
+# Button to run utils function
+utils_button = tk.Button(left_frame, text="Install metasploit-framework", command=install_metasploit_framework)
+utils_button.grid(row=2, column=0, padx=5)
 
 # Label for Nmap scan aggressiveness
 label_text = "Enter the aggressiveness of the nmap scan\n(least aggressive 0 - 3 most aggressive):"
@@ -549,7 +549,7 @@ button = tk.Button(left_frame, text="Submit", command=retrieve_aggressiveness_in
 button.grid(row=5, column=0, padx=5)
 
 # Start Nmap scan button
-nmap_button = tk.Button(left_frame, text="Submit Nmap Scan", command=initiate_nmap_scan)
+nmap_button = tk.Button(left_frame, text="Start Nmap Scan", command=initiate_nmap_scan)
 nmap_button.grid(row=6, column=0, padx=5)
 
 
@@ -582,13 +582,9 @@ rhosts_combobox.current(0)  # Set the combobox to show the first item
 rhosts_combobox.grid(row=5, column=0)
 rhosts_combobox.bind("<<ComboboxSelected>>", on_rhosts_select)
 
-# Button to run exploits function
-exploits_button = tk.Button(right_frame, text="Run runExploits", command=runExploits)
-exploits_button.grid(row=6, column=0, padx=5)
-
-# Button to run utils function
-utils_button = tk.Button(right_frame, text="Install metasploit-framework", command=install_metasploit_framework)
-utils_button.grid(row=7, column=0, padx=5)
+# Button to start metasploit
+metasploit_button = tk.Button(right_frame, text="Start Metasploit", command=start_metasploit_clean)
+metasploit_button.grid(row=7, column=0, padx=5)
 
 # Button to run big boi function
 full_exploit_button = tk.Button(right_frame, text="Run full_exploitation_cycle", command=full_exploitation_cycle)
