@@ -263,11 +263,11 @@ def runExploits(vulnerabilitiesToUse = set([vulnerabilities[EXPLOIT_NUM]])):
                 print("!! CHECK STATUS !!:", exploit.check_redo())
             exploit.check_redo()
         else: ### EXPLOIT THE MODULE
-            print("#" * 34, "RUNNING", vulnerability.exploitType + ":", vulnerability.description, "#" * 34)
+            print("#" * 34, "RUNNING", vulnerability.exploitType + ":", exploit.name, "#" * 34)
             # print("EXPLOIT INFO:\n" + exploit._info) # uncomment this for A LOT of info
             print("VULNERABILITY MODULE:", vulnerability.module)
             console = client.consoles.console()
-            consoles.append((console, vulnerability.description))
+            consoles.append((console, exploit.name))
             if vulnerability.payload:
                 print("PAYLOAD:", vulnerability.payload)
                 print("PAYLOAD IS VALID:", vulnerability.payload in exploit.targetpayloads())
@@ -301,7 +301,7 @@ def runExploits(vulnerabilitiesToUse = set([vulnerabilities[EXPLOIT_NUM]])):
                 for username in usernames:
                     userFile.write(username + "\n")
                 userFile.close()
-            print("#" * 34, "FINISHED", vulnerability.exploitType + ":", vulnerability.description, "#" * 34)
+            print("#" * 34, "FINISHED", vulnerability.exploitType + ":", exploit.name, "#" * 34)
 
     print("ALL EXPLOITS SETUP AND RUNNING")
     while(client.jobs.list):
@@ -351,12 +351,22 @@ def test_mode(): # Runs the test mode
 
         # Function to update labels with details of the selected vulnerability
         def update_vulnerability_details(event):
+            if client is None:
+                messagebox.showerror("Error", "Metasploit client is not initialized. Please start Metasploit first.")
+                return
             # Find the selected vulnerability object
             selected_vuln = next((vuln for vuln in vulnerabilities if vuln.description == vulnerability_dropdown.get()), None)
             if selected_vuln:
-                name_label.config(text=f"Name: {selected_vuln.module}")
+                exploitTemp = client.modules.use(selected_vuln.exploitType, selected_vuln.module)
+                description  = "Rank: " + exploitTemp.rank
+                description += "\n\nDate: " + exploitTemp.disclosuredate
+                description += "\n\nDesc: " + exploitTemp.description
+                description += "\n\nReferences: "
+                for [reference, num] in exploitTemp.references:
+                    description += "[" + reference + " " + num + "]\n"
+                name_label.config(text=f"Name: {exploitTemp.name}")
                 type_label.config(text=f"Type: {selected_vuln.exploitType}")
-                desc_label.config(text=f"Description: {selected_vuln.description}")
+                desc_label.config(text=f"{description}")
 
         # Bind the update function to the dropdown selection event
         vulnerability_dropdown.bind("<<ComboboxSelected>>", update_vulnerability_details)
@@ -560,7 +570,7 @@ button = tk.Button(left_frame, text="Submit", command=retrieve_aggressiveness_in
 button.grid(row=5, column=0, padx=5)
 
 # Start Nmap scan button
-nmap_button = tk.Button(left_frame, text="Start Nmap Scan", command=initiate_nmap_scan)
+nmap_button = tk.Button(left_frame, text="Scan Network For Hosts", command=scan_hosts)
 nmap_button.grid(row=6, column=0, padx=5)
 
 
