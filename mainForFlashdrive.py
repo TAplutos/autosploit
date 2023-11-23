@@ -170,6 +170,7 @@ if __name__ == "__main__":
 
     RHOSTS = scanNetwork.scanNetworkForIPs() # TODO: time which is faster, nmap on no settings then aggressively scan open ports or just aggressively scan everything
 
+    RHOSTS = ["192.168.130.128"]
     for RHOST in RHOSTS:
         print("X" * 34, "BEGINNING OF OUTPUT FOR", RHOST,"X" * 34)
         # Decides if we want to run nmap or just assumes all outputs work
