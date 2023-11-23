@@ -63,7 +63,7 @@ def run_setup_script(): # The intial setup script that runs the initial_setup.sh
         def close_popup():
             popup.destroy()
         _ = proc1.wait()
-        popup.after(1, close_popup)
+        popup.after(180000, close_popup)
         proc1.kill()
         print("Initial setup finished")
         
@@ -89,7 +89,7 @@ def run_server_script(): # Sets up msfconsole RPC server
             tk.messagebox.showinfo("Server Setup Script", "Server setup completed, Go have fun.")
 
         _ = proc1.wait()
-        popup.after(1, close_popup)
+        popup.after(40000 , close_popup)
         proc1.kill()
         print("Server setup finished")
 
