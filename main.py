@@ -369,7 +369,6 @@ def test_mode(): # Runs the test mode
                 description  = "Rank: " + exploitTemp.rank
                 description += "\n\nDate: " + exploitTemp.disclosuredate
                 brokenLine = utils.insert_newline_every_15_spaces(exploitTemp.description)
-                print(brokenLine)
                 description += "\n\nDesc: " + brokenLine
                 description += "\n\nReferences: "
                 for [reference, num] in exploitTemp.references:
