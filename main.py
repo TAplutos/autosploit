@@ -341,27 +341,36 @@ def test_mode(): # Runs the test mode
         vulnerability_dropdown = ttk.Combobox(test_popup, values=vulnerability_options)
         vulnerability_dropdown.pack(pady=5)
 
-        # Input for manual vulnerability number entry
-        vulnerability_number_label = tk.Label(test_popup, text="Or enter a Vulnerability number:")
-        vulnerability_number_label.pack(pady=(10, 0))
+        # Labels for vulnerability details (initially empty)
+        name_label = tk.Label(test_popup, text="Name: ")
+        name_label.pack(pady=(5, 0))
+        type_label = tk.Label(test_popup, text="Type: ")
+        type_label.pack(pady=(5, 0))
+        desc_label = tk.Label(test_popup, text="Description: ")
+        desc_label.pack(pady=(5, 0))
 
+        # Function to update labels with details of the selected vulnerability
+        def update_vulnerability_details(event):
+            # Find the selected vulnerability object
+            selected_vuln = next((vuln for vuln in vulnerabilities if vuln.description == vulnerability_dropdown.get()), None)
+            if selected_vuln:
+                name_label.config(text=f"Name: {selected_vuln.module}")
+                type_label.config(text=f"Type: {selected_vuln.exploitType}")
+                desc_label.config(text=f"Description: {selected_vuln.description}")
 
-        vulnerability_number_entry = tk.Entry(test_popup)
-        vulnerability_number_entry.pack(pady=5)
+        # Bind the update function to the dropdown selection event
+        vulnerability_dropdown.bind("<<ComboboxSelected>>", update_vulnerability_details)
+
 
         # Function to run when Submit is clicked
         def on_submit():
             global client
             selected_vulnerability = vulnerability_dropdown.get()
-            entered_number = vulnerability_number_entry.get()
             
             if client is None:
                 start_metasploit_clean()  # Initialize the Metasploit client if not already done
             
-            if entered_number.isdigit():
-                vulnerability_index = int(entered_number) - 1  # Adjust if your indexing starts from 1
-                runExploits([vulnerabilities[vulnerability_index]])
-            elif selected_vulnerability in vulnerability_options:
+            if selected_vulnerability in vulnerability_options:
                 vulnerability_index = vulnerability_options.index(selected_vulnerability)
                 runExploits([vulnerabilities[vulnerability_index]])
             else:
@@ -514,72 +523,83 @@ def full_exploitation_cycle():
 root = tk.Tk()
 root.title("Bootcon Pentesting Tool GUI v0.2")
 
+# Main frame to contain grid
+left_frame = tk.Frame(root)
+left_frame.grid(row=0, column=0, padx=10)
+
+right_frame = tk.Frame(root)
+right_frame.grid(row=0, column=1, padx=10)
+
 ########## The Widgets ##########
 
+########## The Widgets for Left Frame ##########
+
 # Button to run initial setup script
-setup_button = tk.Button(root, text="Run Initial Setup", command=run_setup_script)
-setup_button.pack()
+setup_button = tk.Button(left_frame, text="Run Initial Setup", command=run_setup_script)
+setup_button.grid(row=0, column=0, padx=5)
 
 # Button to run server script
-server_button = tk.Button(root, text="Run Server Setup", command=run_server_script)
-server_button.pack()
+server_button = tk.Button(left_frame, text="Run Server Setup", command=run_server_script)
+server_button.grid(row=1, column=0, padx=5)
+
+# Button to run utils function
+utils_button = tk.Button(left_frame, text="Install metasploit-framework", command=install_metasploit_framework)
+utils_button.grid(row=2, column=0, padx=5)
+
+# Label for Nmap scan aggressiveness
+label_text = "Enter the aggressiveness of the nmap scan\n(least aggressive 0 - 3 most aggressive):"
+label = tk.Label(left_frame, text=label_text, justify=tk.LEFT)
+label.grid(row=3, column=0, padx=5)
+
+# Entry for Nmap scan aggressiveness
+entry = tk.Entry(left_frame)
+entry.grid(row=4, column=0, padx=5)
+
+# Submit button for Nmap scan aggressiveness
+button = tk.Button(left_frame, text="Submit", command=retrieve_aggressiveness_input)
+button.grid(row=5, column=0, padx=5)
+
+# Start Nmap scan button
+nmap_button = tk.Button(left_frame, text="Start Nmap Scan", command=initiate_nmap_scan)
+nmap_button.grid(row=6, column=0, padx=5)
+
+
+########## The Widgets for Right Frame ##########
 
 # Checkbox for test mode
 test_mode_var = tk.IntVar() # Create a variable to store the state of the test mode checkbox
-test_mode_checkbox = tk.Checkbutton(root, text="Enable Test Mode", variable=test_mode_var, command=toggle_test_mode)
-test_mode_checkbox.pack()
+test_mode_checkbox = tk.Checkbutton(right_frame, text="Enable Test Mode", variable=test_mode_var, command=toggle_test_mode)
+test_mode_checkbox.grid(row=0, column=0, padx=5)
 
 # Button for test mode
-test_mode_button = tk.Button(root, text="Test Mode", command=test_mode)
-test_mode_button.pack()
-
-# Input for aggressiveness of Nmap scan
-label = tk.Label(root, text="Enter the aggressiveness of the nmap scan (least aggressive 0 - 3 most aggressive):")
-label.pack()
-
-entry = tk.Entry(root)
-entry.pack()
-
-button = tk.Button(root, text="Submit", command=retrieve_aggressiveness_input)
-button.pack()
-
-# Button to start metasploit
-metasploit_button = tk.Button(root, text="Start Metasploit", command=start_metasploit_clean)
-metasploit_button.pack()
-
-# Start Nmap scan button
-nmap_button = tk.Button(root, text="Submit Nmap Scan", command=scan_hosts)
-nmap_button.pack()
+test_mode_button = tk.Button(right_frame, text="Test Mode", command=test_mode)
+test_mode_button.grid(row=1, column=0, padx=5)
 
 # New IP Entry Field
-new_ip_label = tk.Label(root, text="Enter new RHOST IP:")
-new_ip_label.pack()
-new_ip_entry = tk.Entry(root)
-new_ip_entry.pack()
+new_ip_label = tk.Label(right_frame, text="Enter new RHOST IP:")
+new_ip_label.grid(row=2, column=0)
+
+new_ip_entry = tk.Entry(right_frame)
+new_ip_entry.grid(row=3, column=0)
 
 # Button to Add New IP to RHOSTS
-add_ip_button = tk.Button(root, text="Add IP to RHOSTS", command=add_to_rhosts)
-add_ip_button.pack()
+add_ip_button = tk.Button(right_frame, text="Add IP to RHOSTS", command=add_to_rhosts)
+add_ip_button.grid(row=4, column=0, padx=5)
 
 # RHost dropdown menu
-rhosts_combobox = ttk.Combobox(root)
+rhosts_combobox = ttk.Combobox(right_frame)
 rhosts_combobox['values'] = ["Select RHOST"]  # Placeholder values
 rhosts_combobox.current(0)  # Set the combobox to show the first item
-rhosts_combobox.pack()
-
+rhosts_combobox.grid(row=5, column=0)
 rhosts_combobox.bind("<<ComboboxSelected>>", on_rhosts_select)
 
-# Button to run exploits function
-exploits_button = tk.Button(root, text="Run runExploits", command=runExploits)
-exploits_button.pack()
-
-# Button to run utils function
-utils_button = tk.Button(root, text="Install metasploit-framework", command=install_metasploit_framework)
-utils_button.pack()
+# Button to start metasploit
+metasploit_button = tk.Button(right_frame, text="Start Metasploit", command=start_metasploit_clean)
+metasploit_button.grid(row=7, column=0, padx=5)
 
 # Button to run big boi function
-full_exploit_button = tk.Button(root, text="Run full_exploitation_cycle", command=full_exploitation_cycle)
-full_exploit_button.pack()
+full_exploit_button = tk.Button(right_frame, text="Run full_exploitation_cycle", command=full_exploitation_cycle)
+full_exploit_button.grid(row=8, column=0, padx=5)
 
 
 
