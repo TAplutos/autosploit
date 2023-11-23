@@ -52,46 +52,55 @@ def run_setup_script(): # The intial setup script that runs the initial_setup.sh
         # Create a top-level pop-up window
         popup = tk.Toplevel(root)
         popup.title("Initial Setup in Progress")
-        message = tk.Label(popup, text="Initial setup started, please wait up to 3 minutes. \nThis window will close automatically once it's done! \n\nNote: you will need to input your password in terminal to properly run the sudo commands.\n\n Note: If it says you have the requirements already then feel free to close this window and move on.")
+        message = tk.Label(popup, text="Initial setup Complete \nThis window will close automatically in 30 seconds! \n\nNote: you will need to input your password in terminal to properly run the sudo commands.\nIf you didnt run as sudo.")
         message.pack()
         
         proc1 = subprocess.Popen(["./initial_setup.sh"], shell=True)
         initial_setup_done = True
         setup_button.config(state="disabled")
 
-        # Function to close the popup
-        def close_popup():
-            popup.destroy()
-        _ = proc1.wait()
-        popup.after(180000, close_popup)
-        proc1.kill()
-        print("Initial setup finished")
+        # Function to periodically check if the subprocess is done
+        def check_process():
+            if proc1.poll() is not None:  # If the process is done
+                popup.destroy()
+                print("Initial setup finished")
+            else:
+                # Check again after some time
+                popup.after(1000, check_process)
+
+        # Start checking
+        check_process()
         
 
 
 def run_server_script(): # Sets up msfconsole RPC server
     global server_setup_done, server_button
     if not server_setup_done:
+        print("Starting server setup")
+        proc1 = subprocess.Popen(["./setup.sh"], shell=True)
+        server_setup_done = True
+        server_button.config(state="disabled")
+
         # Create a top-level pop-up window
         popup = tk.Toplevel(root)
         popup.title("Server Setup in Progress")
         message = tk.Label(popup, text="Server setup started, please wait up to 40 seconds. \nThis window will close automatically once it's done! \n\nNote: You only need to run this if you restarted your computer since the last time you ran this setup.")
         message.pack()
 
-        print("Starting server setup")
-        proc1 = subprocess.Popen(["./setup.sh"], shell=True)
-        server_setup_done = True
-        server_button.config(state="disabled")
+        # Function to periodically check if the subprocess is done
+        def check_process():
+            if proc1.poll() is not None:  # If the process is done
+                popup.destroy()
+                tk.messagebox.showinfo("Server Setup Script", "Server setup completed, Go have fun.")
+                print("Server setup finished")
+            else:
+                # Check again after some time
+                popup.after(1000, check_process)
 
-        # Function to close the popup
-        def close_popup():
-            popup.destroy()
-            tk.messagebox.showinfo("Server Setup Script", "Server setup completed, Go have fun.")
+            # Start checking
+        check_process()
 
-        _ = proc1.wait()
-        popup.after(40000 , close_popup)
-        proc1.kill()
-        print("Server setup finished")
+
 
 
 def retrieve_aggressiveness_input(): # Gets nmap aggressiveness from GUI
