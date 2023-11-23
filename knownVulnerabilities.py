@@ -112,7 +112,7 @@ _smtpScannerDict = {
     "maxRuntime": 1500,
     "color": Fore.GREEN
     } 
-_smtpScanner= Vulnerability(_smtpScannerDict)
+#_smtpScanner= Vulnerability(_smtpScannerDict)
 
 _mysqlBruteForceDict = {
     "keywords": "",
