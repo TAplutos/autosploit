@@ -26,7 +26,6 @@ TEST_MODE = False # For test mode to be called
 RHOSTS = [] # Holds our target IP addresses
 client = None # Holds our metasploit client
 
-
 ###################################### OG Variables ######################################
 CHECK_MODE = False # will check for exploits rather than running them when can
 RUN_NMAP = False # set this to false when you want to test on metasploit machine and assume all exploits will run
@@ -369,7 +368,8 @@ def test_mode(): # Runs the test mode
                 exploitTemp = client.modules.use(selected_vuln.exploitType, selected_vuln.module)
                 description  = "Rank: " + exploitTemp.rank
                 description += "\n\nDate: " + exploitTemp.disclosuredate
-                description += "\n\nDesc: " + exploitTemp.description
+                brokenLine = utils.insert_newline_every_15_spaces(exploitTemp.description)
+                description += "\n\nDesc: " + brokenLine
                 description += "\n\nReferences: "
                 for [reference, num] in exploitTemp.references:
                     description += "[" + reference + " " + num + "]\n"

@@ -6,6 +6,20 @@ import subprocess
 default_passwords = ["admin","manager","role1","root","tomcat","s3cret","vagrant","QLogic66","password","Password1","changethis","r00t","toor","password1","j2deployer","OvW*busr1","kdsxc","owaspba","ADMIN","xampp"]
 default_usernames = ["admin","manager","role1","role","root","tomcat","both","QCC","j2deployer","ovwebusr","cxsdk","ADMIN","xampp"]
 
+def insert_newline_every_15_spaces(input_string):
+    result = ""
+    count = 0
+
+    for char in input_string:
+        result += char
+        if char.isspace():
+            count += 1
+            if count == 15:
+                result += '\n'
+                count = 0
+
+    return result
+
 def runThisCommand(command):
     command = command.split()
     result = subprocess.run(command, stdout=subprocess.PIPE)
