@@ -110,19 +110,21 @@ def retrieve_aggressiveness_input(): # Gets nmap aggressiveness from GUI
         print("Please enter a valid integer.")
 
 
-def initiate_nmap_scan(): # Runs the Nmap scan
-    global NMAP_AGGRESSIVENESS
-    # Assuming aggressiveness is obtained from the GUI
-    input_value = entry.get()
-    if input_value.isdigit():  # Check if the input is a digit
-        NMAP_AGGRESSIVENESS = int(input_value)
-        if 0 <= NMAP_AGGRESSIVENESS <= 3:
-            nmap_dest.run_scan(NMAP_AGGRESSIVENESS)
-            print(f"Running Nmap scan with aggressiveness {NMAP_AGGRESSIVENESS}")
-        else:
-            tk.messagebox.showwarning("Warning", "Please enter a valid number between 0 and 3.")
-    else:
-        tk.messagebox.showwarning("Warning", "Please enter a valid integer for Nmap scan aggressiveness.")
+def scan_hosts(): # Runs the Nmap scan
+    newRHOSTS = scanNetwork.scanNetworkForIPRanges()
+    RHOSTS = RHOSTS + newRHOSTS# @CHRIS update the list of rhosts on the box here
+    # @CHRIS display hosts found somewhere 
+    # global NMAP_AGGRESSIVENESS
+    # # Assuming aggressiveness is obtained from the GUI
+    # input_value = entry.get()
+    # if input_value.isdigit():  # Check if the input is a digit
+    #     NMAP_AGGRESSIVENESS = int(input_value)
+    #     if 0 <= NMAP_AGGRESSIVENESS <= 3:
+    #         print(f"Scanning Network")
+    #     else:
+    #         tk.messagebox.showwarning("Warning", "Please enter a valid number between 0 and 3.")
+    # else:
+    #     tk.messagebox.showwarning("Warning", "Please enter a valid integer for Nmap scan aggressiveness.")
 
 
 def update_rhosts_combobox(new_items): # Updates the RHOSTS combobox with new items
@@ -236,8 +238,8 @@ def runExploits(vulnerabilitiesToUse = set([vulnerabilities[EXPLOIT_NUM]])):
             continue
         module = vulnerability.module
         exploit = client.modules.use(vulnerability.exploitType, module)
+
         # options = exploit.options
-        exploit.missing_required
         if 'RHOSTS' in exploit.missing_required:
             exploit['RHOSTS'] = RHOSTS[0] # TODO: change this to loop through
         if exploit.missing_required:
@@ -546,7 +548,7 @@ metasploit_button = tk.Button(root, text="Start Metasploit", command=start_metas
 metasploit_button.pack()
 
 # Start Nmap scan button
-nmap_button = tk.Button(root, text="Submit Nmap Scan", command=initiate_nmap_scan)
+nmap_button = tk.Button(root, text="Submit Nmap Scan", command=scan_hosts)
 nmap_button.pack()
 
 # New IP Entry Field
