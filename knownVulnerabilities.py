@@ -208,4 +208,4 @@ _postgresDict = Vulnerability(_postgresDict)
 
 # removed so this doesnt take 8 years each time when testing
 # _smtpScanner
-vulnerabilities = [_ircd, _distcc, _vsftpd, _tomcatDict, _sambaDict, _apacheDict, _postgresDict]
+vulnerabilities = [_ircd, _distcc, _vsftpd, _smtpScanner, _tomcatDict, _sambaDict, _apacheDict, _postgresDict]
